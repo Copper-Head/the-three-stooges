@@ -8,7 +8,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-t", "--type", default="simple", help="Type of RNN (simple, gru or lstm)")
 args = parser.parse_args()
 
-ml = load("seqgen_" + args.type + ".pkl")
+ml = load(open("seqgen_" + args.type + ".pkl"))
 ind_to_char = cPickle.load(open("ind_to_char.pkl"))
 
 param_dict = ml.model.get_parameter_dict()
@@ -16,6 +16,7 @@ param_dict = ml.model.get_parameter_dict()
 init_state0 = param_dict["/sequencegenerator/with_fake_attention/transition/layer#0.initial_state"]
 init_state1 = param_dict["/sequencegenerator/with_fake_attention/transition/layer#1.initial_state"]
 init_state2 = param_dict["/sequencegenerator/with_fake_attention/transition/layer#2.initial_state"]
+# LSTMs have cells that are separate from the states. these have to be updated manually in the same manner as the states
 if args.type == "lstm":
     init_cells0 = param_dict["/sequencegenerator/with_fake_attention/transition/layer#0.initial_cells"]
     init_cells1 = param_dict["/sequencegenerator/with_fake_attention/transition/layer#1.initial_cells"]
@@ -43,11 +44,18 @@ while 1:
     current_char = 0
     sequence = []
     while current_char != 1:  # sample until end-of-sequence character is generated
-        new_state0, new_state1, new_state2, current_char, cost = rnn_sample([[current_char]])
+        if args.type == "lstm":
+            new_state0, new_cells0, new_state1, new_cells1, new_state2, new_cells2, current_char, cost = rnn_sample([[current_char]])
+        else:
+            new_state0, new_state1, new_state2, current_char, cost = rnn_sample([[current_char]])
         current_char = current_char[0][0]  # from 2d (axes for sequence length and batch size) to 0d integer
         init_state0.set_value(new_state0[0][0])  # same here
         init_state1.set_value(new_state1[0][0])
         init_state2.set_value(new_state2[0][0])
+        if args.type == "lstm":
+            init_cells0.set_value(new_cells0[0][0])
+            init_cells1.set_value(new_cells1[0][0])
+            init_cells2.set_value(new_cells2[0][0])
         sequence.append(ind_to_char[current_char])
     print "\n"
     print "".join(sequence)
