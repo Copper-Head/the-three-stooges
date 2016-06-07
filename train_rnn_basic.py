@@ -77,10 +77,6 @@ generating = generator.generate(n_steps=char_seq.shape[0], batch_size=char_seq.s
 generator.initialize()
 
 gen_model = Model(generating)
-cost_model = Model(cross_ent)
-for par in cost_model.get_parameter_dict():
-    print par
-raw_input()
 
 # the thing that I feed into the parameters argument I copied from some blocks-examples thing. the good old computation
 # graph and then cg.parameters should work as well
@@ -105,7 +101,7 @@ data_stream_valid = PadAndAddMasks(
     DataStream.default_stream(dataset=valid_data, iteration_scheme=SequentialScheme(valid_data.num_examples,
                                                                                     batch_size=32)),
     produces_examples=False)
-save = Checkpoint("seqgen_gru.pkl")
+save = Checkpoint("seqgen_" + args.type + ".pkl")
 
 # monitor:
 # - training cost every 200 batches (computed along the way, so cheap to do), as well as gradient and step lengths to

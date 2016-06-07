@@ -8,7 +8,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-t", "--type", default="simple", help="Type of RNN (simple, gru or lstm)")
 args = parser.parse_args()
 
-ml = load("seqgen_gru.pkl")
+ml = load("seqgen_" + args.type + ".pkl")
 ind_to_char = cPickle.load(open("ind_to_char.pkl"))
 
 param_dict = ml.model.get_parameter_dict()
