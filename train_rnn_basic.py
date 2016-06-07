@@ -2,7 +2,8 @@ import argparse
 
 import numpy
 from blocks.algorithms import GradientDescent, Adam, CompositeRule, StepClipping
-from blocks.bricks.recurrent import GatedRecurrent, RecurrentStack, LSTM
+from blocks.bricks import Tanh
+from blocks.bricks.recurrent import GatedRecurrent, RecurrentStack, LSTM, SimpleRecurrent
 from blocks.bricks.sequence_generators import SequenceGenerator, Readout, SoftmaxEmitter, LookupFeedback
 from blocks.extensions import Timing, Printing, FinishAfter, ProgressBar
 from blocks.extensions.monitoring import TrainingDataMonitoring, DataStreamMonitoring
@@ -22,6 +23,7 @@ from custom_blocks import PadAndAddMasks
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-c", "--clipping", default=1.0, type=float, help="Step clipping threshold (default: 1)")
+parser.add_argument("-t", "--type", default="simple", help="Type of RNN (simple, gru or lstm)")
 args = parser.parse_args()
 
 # define model
@@ -35,15 +37,34 @@ mask = tensor.matrix("seq_mask")
 input_dim = numpy.load("onehot_size.npy")
 output_dim = input_dim
 # these are arbitrary
+# TODO comparing different types with the same hidden layer size is not fair -- more complex ones have more parameters
+# so maybe we could do it like Karpathy and use LSTMs as "baseline" and set other types layer sizes such that they have
+# approximately the same number of parameters
 hidden_dim1 = 512
 hidden_dim2 = 512
 hidden_dim3 = 512
 embed_dim = 30
 
-# stack of three GRUs (of course we can use a simpler transition for the beginning if you want to)
-rnns = [GatedRecurrent(dim=hidden_dim1), GatedRecurrent(dim=hidden_dim2), GatedRecurrent(dim=hidden_dim3)]
+# stack of three RNNs (if this is too much we can of course use a single layer for the beginning)
+# all RNNs are called "layer" so we don't need to use different by-name-filters for different rnn types later when
+# sampling
+# note that RecurrentStack automatically appends #0, #1 etc. to the names
+if args.type == "lstm":
+    rnns = [LSTM(dim=hidden_dim1, name="layer"), LSTM(dim=hidden_dim2, name="layer"),
+            LSTM(dim=hidden_dim3, name="layer")]
+elif args.type == "gru":
+    rnns = [GatedRecurrent(dim=hidden_dim1, name="layer"), GatedRecurrent(dim=hidden_dim2, name="layer"),
+            GatedRecurrent(dim=hidden_dim3, name="layer")]
+elif args.type == "simple":  # note that the other RNN types have default activations specified
+    rnns = [SimpleRecurrent(dim=hidden_dim1, activation=Tanh(), name="layer"),
+            SimpleRecurrent(dim=hidden_dim2, activation=Tanh(), name="layer"),
+            SimpleRecurrent(dim=hidden_dim3, activation=Tanh(), name="layer")]
+else:
+    raise ValueError("Invalid RNN type specified!")
 stacked_rnn = RecurrentStack(transitions=rnns, skip_connections=True, name="transition")
 # note: Readout has initial_output 0 because for me that codes a "beginning of sequence" character
+# the source_names argument looks this way to cope with LSTMs also having cells as part of their "states", but those
+# shouldn't be passed to the readout (since they're for "internal use" only)
 generator = SequenceGenerator(
     Readout(readout_dim=output_dim, source_names=[thing for thing in stacked_rnn.apply.states if "states" in thing],
             emitter=SoftmaxEmitter(initial_output=0, name="emitter"),
@@ -56,12 +77,16 @@ generating = generator.generate(n_steps=char_seq.shape[0], batch_size=char_seq.s
 generator.initialize()
 
 gen_model = Model(generating)
+cost_model = Model(cross_ent)
+for par in cost_model.get_parameter_dict():
+    print par
+raw_input()
 
 # the thing that I feed into the parameters argument I copied from some blocks-examples thing. the good old computation
 # graph and then cg.parameters should work as well
 # on the step rule: This means gradient clipping (threshold passed in as a command line argument) followed by Adam
 # performed on the clipped gradient
-# if you don't know what gradient clipping is: Define treshold T; if the length of the gradient is > T, scale it such
+# if you don't know what gradient clipping is: Define threshold T; if the length of the gradient is > T, scale it such
 # that its length is equal to T. This serves to make exploding gradients less severe
 algorithm = GradientDescent(cost=cross_ent, parameters=list(Selector(generator).get_parameters().values()),
                             step_rule=CompositeRule(components=[StepClipping(threshold=args.clipping), Adam()]),
@@ -93,7 +118,7 @@ monitor_valid = DataStreamMonitoring(data_stream=data_stream_valid, variables=[c
                                      prefix="validation")
 
 # training will run forever until you cancel manually
-# TODO write an extension that saves the best model (set of parameters) so far
+# TODO write an extension that saves the best model (set of parameters) so far, wrt validation performance
 main_loop = MainLoop(algorithm=algorithm, data_stream=data_stream, model=gen_model,
                      extensions=[monitor_grad, monitor_valid, FinishAfter(after_n_epochs=0), ProgressBar(),
                                  Timing(), Printing(every_n_batches=200), save])

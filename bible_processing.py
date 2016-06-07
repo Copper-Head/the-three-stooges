@@ -1,9 +1,9 @@
+import re
+import cPickle
+
 import h5py
 import numpy
 from fuel.datasets.hdf5 import H5PYDataset
-
-import re
-import cPickle
 
 
 def find_verse_marker(line):
@@ -21,7 +21,6 @@ def biblefile_to_hdf5(open_file):  # TODO REMOVE LINES WITH THE BOOK OF BLABLA
     current_char_ind = 2  # starts at 2 because 0, 1 are reserved for "end/start-of-sequence" character
     all_verses = []
     # TODO I still don't know what the readout initial_output really does; maybe we need to put <S> into every sequence
-    # TODO explicitly
     current_verse = []
     for line in open_file:
         # first we need to check if a new verse begins somewhere in the line (not just beginning...)
