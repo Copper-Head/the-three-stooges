@@ -2,7 +2,7 @@ import argparse
 
 import numpy
 from blocks.algorithms import GradientDescent, Adam, CompositeRule, StepClipping
-from blocks.bricks.recurrent import GatedRecurrent, RecurrentStack
+from blocks.bricks.recurrent import GatedRecurrent, RecurrentStack, LSTM
 from blocks.bricks.sequence_generators import SequenceGenerator, Readout, SoftmaxEmitter, LookupFeedback
 from blocks.extensions import Timing, Printing, FinishAfter, ProgressBar
 from blocks.extensions.monitoring import TrainingDataMonitoring, DataStreamMonitoring
@@ -17,7 +17,7 @@ from fuel.schemes import SequentialScheme, ShuffledScheme
 from fuel.streams import DataStream
 from theano import tensor
 
-from custom_thingeroos import PadAndAddMasks
+from custom_blocks import PadAndAddMasks
 
 
 parser = argparse.ArgumentParser()
@@ -45,7 +45,7 @@ rnns = [GatedRecurrent(dim=hidden_dim1), GatedRecurrent(dim=hidden_dim2), GatedR
 stacked_rnn = RecurrentStack(transitions=rnns, skip_connections=True, name="transition")
 # note: Readout has initial_output 0 because for me that codes a "beginning of sequence" character
 generator = SequenceGenerator(
-    Readout(readout_dim=output_dim, source_names=stacked_rnn.apply.states,
+    Readout(readout_dim=output_dim, source_names=[thing for thing in stacked_rnn.apply.states if "states" in thing],
             emitter=SoftmaxEmitter(initial_output=0, name="emitter"),
             feedback_brick=LookupFeedback(num_outputs=output_dim, feedback_dim=embed_dim, name="feedback"),
             name="readout"),
