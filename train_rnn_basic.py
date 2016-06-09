@@ -24,6 +24,7 @@ from custom_blocks import PadAndAddMasks
 parser = argparse.ArgumentParser()
 parser.add_argument("-c", "--clipping", default=1.0, type=float, help="Step clipping threshold (default: 1)")
 parser.add_argument("-t", "--type", default="simple", help="Type of RNN (simple, gru or lstm)")
+parser.add_argument("-e", "--epochs", default=0, type=int, help="Stop after this many epochs (default: 0)")
 args = parser.parse_args()
 
 # define model
@@ -116,7 +117,7 @@ monitor_valid = DataStreamMonitoring(data_stream=data_stream_valid, variables=[c
 # training will run forever until you cancel manually
 # TODO write an extension that saves the best model (set of parameters) so far, wrt validation performance
 main_loop = MainLoop(algorithm=algorithm, data_stream=data_stream, model=gen_model,
-                     extensions=[monitor_grad, monitor_valid, FinishAfter(after_n_epochs=0), ProgressBar(),
+                     extensions=[monitor_grad, monitor_valid, FinishAfter(after_n_epochs=args.epochs), ProgressBar(),
                                  Timing(), Printing(every_n_batches=200), save])
 
 main_loop.run()
