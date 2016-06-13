@@ -32,6 +32,7 @@ parser.add_argument("-d", "--dimensions", default="512,512,512", type=str, help=
 args = parser.parse_args()
 
 dimensions = [int(d) for d in args.dimensions.split(',')]
+print('Dimensions:', dimensions)
 
 nkwargs = {'network_type':args.type, 'clipping':args.clipping}
 if dimensions:
