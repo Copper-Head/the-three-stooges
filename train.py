@@ -29,7 +29,7 @@ args = parser.parse_args()
 dimensions = [int(d) for d in args.dimensions.split(',')]
 print('Dimensions:', dimensions)
 
-nkwargs = {'network_type': args.type, 'clipping': args.clipping}
+nkwargs = {'network_type': args.type}
 if dimensions:
     nkwargs['hidden_dims'] = dimensions
 
