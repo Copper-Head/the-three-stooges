@@ -1,8 +1,8 @@
 import argparse
-from blocks.serialization import load_parameters
 from network import *
 
 import pip, re, sys
+
 
 inst_pckgs = pip.get_installed_distributions()
 cpkl = [e for e in inst_pckgs if re.match('[cC][Pp]ickle', e.project_name)]
@@ -14,9 +14,9 @@ else:
 parser = argparse.ArgumentParser()
 parser.add_argument("-t", "--type", default="simple", help="Type of RNN (simple, gru or lstm)")
 parser.add_argument("-f", "--file", type=str, help="The model file generated in training.")
-parser.add_argument("-r", "--readdims", type=int, default=0, help="Determines, whether the hidden layer dimensions " + \
-                                                                         "should be read from the file name. 0 (default) for no," + \
-                                                                         " any other number for yes.")
+parser.add_argument("-r", "--readdims", type=int, default=0, help="Determines, whether the hidden layer dimensions " +
+                                                                  "should be read from the file name. 0 (default) for no," +
+                                                                  " any other number for yes.")
 args = parser.parse_args()
 
 if not args.file:
@@ -24,10 +24,10 @@ if not args.file:
 
 fname = args.file
 
-kwargs = {'network_type':args.type}
+kwargs = {'network_type': args.type}
 
 if args.readdims:
-    kwargs['hidden_dims']=[e for e in fname.split('.')[0].split('_') if e.isnumeric()]
+    kwargs['hidden_dims'] = [e for e in fname.split('.')[0].split('_') if e.isnumeric()]
 
 nt = Network(**kwargs)
 nt.set_parameters(fname)

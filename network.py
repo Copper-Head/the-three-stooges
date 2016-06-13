@@ -1,25 +1,11 @@
-import argparse
-
 import numpy
-from blocks.algorithms import GradientDescent, Adam, CompositeRule, StepClipping
 from blocks.bricks import Tanh
 from blocks.bricks.recurrent import GatedRecurrent, RecurrentStack, LSTM, SimpleRecurrent
 from blocks.bricks.sequence_generators import SequenceGenerator, Readout, SoftmaxEmitter, LookupFeedback
-from blocks.extensions import Timing, Printing, FinishAfter, ProgressBar
-from blocks.extensions.monitoring import TrainingDataMonitoring, DataStreamMonitoring
-from blocks.extensions.saveload import Checkpoint
 from blocks.initialization import Uniform
-from blocks.main_loop import MainLoop
 from blocks.model import Model
-from blocks.monitoring import aggregation
-from blocks.select import Selector
 from blocks.serialization import load_parameters
-from fuel.datasets.hdf5 import H5PYDataset
-from fuel.schemes import SequentialScheme, ShuffledScheme
-from fuel.streams import DataStream
 from theano import tensor
-
-from custom_blocks import PadAndAddMasks
 
 
 class NetworkType(object):
@@ -44,16 +30,16 @@ class Network(object):
     generator -- the blocks SequenceGenerator object
     hidden_dims -- the dimensions of the hidden layers
     """
-    def __init__(self, network_type=NetworkType.SIMPLE_RNN, clipping=1.0, input_dim_file='onehot_size.npy', hidden_dims=[512, 512, 512], embed_dim=30):
+    def __init__(self, network_type=NetworkType.SIMPLE_RNN, input_dim_file='onehot_size.npy', hidden_dims=[512, 512, 512], embed_dim=30):
         char_seq = tensor.imatrix("character_seqs")
         mask = tensor.matrix("seq_mask")
         input_dim = numpy.load(input_dim_file)
         output_dim = input_dim
 
-        # stack of three RNNs (if this is too much we can of course use a single layer for the beginning)
-        # all RNNs are called "layer" so we don't need to use different by-name-filters for different rnn types later when
-        # sampling
-        # note that RecurrentStack automatically appends #0, #1 etc. to the names
+        # Stack of three RNNs (if this is too much we can of course use a single layer for the beginning).
+        # All RNNs are called "layer" so we don't need to use different by-name-filters for different rnn types later
+        # when sampling.
+        # Note that RecurrentStack automatically appends #0, #1 etc. to the names.
         if network_type == NetworkType.SIMPLE_RNN:
             brick = SimpleRecurrent
         elif network_type == NetworkType.GRU:
@@ -63,13 +49,14 @@ class Network(object):
         else:
             raise ValueError("Invalid RNN type specified!")
 
-        rnns = [brick(dim=dim, activation=Tanh(), name='layer') for dim in hidden_dims] if network_type == NetworkType.SIMPLE_RNN else \
-               [brick(dim=dim, name='layer') for dim in hidden_dims]
+        rnns = [brick(dim=dim, activation=Tanh(), name='layer') for dim in hidden_dims]
         stacked_rnn = RecurrentStack(transitions=rnns, skip_connections=True, name="transition")
 
-        # note: Readout has initial_output 0 because for me that codes a "beginning of sequence" character
-        # the source_names argument looks this way to cope with LSTMs also having cells as part of their "states", but those
-        # shouldn't be passed to the readout (since they're for "internal use" only)
+        # Note: Readout has initial_output 0 because for me that codes a "beginning of sequence" character.
+        # The source_names argument looks this way to cope with LSTMs also having cells as part of their "states", but
+        # those shouldn't be passed to the readout (since they're for "internal use" only).
+        # A note on the side: RecurrentStack takes care of this via a "states_name" argument, which is "states" by
+        # default.
         generator = SequenceGenerator(
             Readout(readout_dim=output_dim, source_names=[thing for thing in stacked_rnn.apply.states if "states" in thing],
                     emitter=SoftmaxEmitter(initial_output=0, name="emitter"),
