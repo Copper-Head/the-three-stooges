@@ -62,7 +62,7 @@ data_stream_valid = PadAndAddMasks(
     DataStream.default_stream(dataset=valid_data, iteration_scheme=SequentialScheme(valid_data.num_examples,
                                                                                     batch_size=32)),
     produces_examples=False)
-save = Checkpoint("seqgen_" + args.type + '_' + '_'.join(network.hidden_dims) + ".pkl")
+save = Checkpoint("seqgen_" + args.type + '_' + '_'.join([str(d) for d in network.hidden_dims]) + ".pkl")
 
 # monitor:
 # - training cost every 200 batches (computed along the way, so cheap to do), as well as gradient and step lengths to
