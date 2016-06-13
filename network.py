@@ -55,18 +55,16 @@ class Network(object):
         # sampling
         # note that RecurrentStack automatically appends #0, #1 etc. to the names
         if network_type == NetworkType.SIMPLE_RNN:
-            rnns = [SimpleRecurrent(dim=hidden_dims[0], activation=Tanh(), name="layer"),
-            SimpleRecurrent(dim=hidden_dims[1], activation=Tanh(), name="layer"),
-            SimpleRecurrent(dim=hidden_dims[2], activation=Tanh(), name="layer")]
+            brick = SimpleRecurrent
         elif network_type == NetworkType.GRU:
-            rnns = [GatedRecurrent(dim=hidden_dims[0], name="layer"), GatedRecurrent(dim=hidden_dims[1], name="layer"),
-            GatedRecurrent(dim=hidden_dims[2], name="layer")]
+            brick = GatedRecurrent
         elif network_type == NetworkType.LSTM:
-            rnns = [LSTM(dim=hidden_dims[0], name="layer"), LSTM(dim=hidden_dims[1], name="layer"),
-            LSTM(dim=hidden_dims[2], name="layer")]
+            brick = LSTM
         else:
             raise ValueError("Invalid RNN type specified!")
 
+        rnns = [brick(dim=dim, activation=Tanh(), name='layer') for dim in hidden_dims] if network_type == NetworkType.SIMPLE_RNN else \
+               [brick(dim=dim, name='layer') for dim in hidden_dims]
         stacked_rnn = RecurrentStack(transitions=rnns, skip_connections=True, name="transition")
 
         # note: Readout has initial_output 0 because for me that codes a "beginning of sequence" character

@@ -26,9 +26,14 @@ parser.add_argument("-c", "--clipping", default=1.0, type=float, help="Step clip
 parser.add_argument("-t", "--type", default="simple", help="Type of RNN ("+NetworkType.SIMPLE_RNN+", "+\
                                                            NetworkType.GRU+" or "+NetworkType.LSTM+")")
 parser.add_argument("-e", "--epochs", default=0, type=int, help="Stop after this many epochs (default: 0)")
+parser.add_argument("-d", "--dimensions", default="512,512,512", type=str, help="Configure number of layers and dimensions by"+\
+                                                                                " just enumerating dimensions (e.g. 100, 100 for"+\
+                                                                                " a two-layered network with dims 100)")
 args = parser.parse_args()
 
-network = Network(network_type=args.type, clipping=args.clipping)
+dimensions = [int(d) for d in args.dimensions.split(',')]
+
+network = Network(network_type=args.type, clipping=args.clipping, hidden_dims=dimensions)
 
 cross_ent = network.cost
 generator = network.generator
