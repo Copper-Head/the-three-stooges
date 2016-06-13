@@ -33,7 +33,11 @@ args = parser.parse_args()
 
 dimensions = [int(d) for d in args.dimensions.split(',')]
 
-network = Network(network_type=args.type, clipping=args.clipping, hidden_dims=dimensions)
+nkwargs = {'network_type':args.type, 'clipping':args.clipping}
+if dimensions:
+    nkwargs['hidden_dims'] = dimensions
+
+network = Network(**nkwargs)
 
 cross_ent = network.cost
 generator = network.generator
