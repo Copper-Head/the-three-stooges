@@ -65,6 +65,7 @@ class Network(object):
             transition=stacked_rnn, weights_init=Uniform(width=0.02), biases_init=Uniform(width=0.0001))
 
         cross_ent = generator.cost(outputs=char_seq, mask=mask)
+        cross_ent.name = "cross_entropy"
         generating = generator.generate(n_steps=char_seq.shape[0], batch_size=char_seq.shape[1])
         generator.initialize()
 

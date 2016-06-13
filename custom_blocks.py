@@ -118,15 +118,18 @@ class EarlyStopping(SimpleExtension, MonitoringExtension):
             logger.info("Got an improvement from the last measure; tolerance reset.")
             self.n_since_improvement = 0
         else:
-            logger.info("No improvement since the last measure!")
+            logger.info("No improvement since the last measure! Tolerating " +
+                        str(self.tolerance - self.n_since_improvement)) + " more..."
             self.n_since_improvement += 1
         self.last_value = current_value
         # if we have an improvement over the best yet, we store that and make a checkpoint
         if current_value < self.best_value:
+            logger.info("Got a new best value! Saving model...")
             self.do_checkpoint(callback_name, *args)
             self.best_value = current_value
         # went too long without improvement? Giving up is the obvious solution.
         if self.n_since_improvement > self.tolerance:
+            logger.info("Thou hast exceeded that tolerance of mine for thy miserable performance!")
             # Note that the way this comparison is set up enforces the following interpretation on the tolerance
             # parameter: The number of times in a row we will accept no improvement. E.g. if it set to 0, we will stop
             # if we *ever* get no improvement on the tracked value.

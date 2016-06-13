@@ -2,8 +2,7 @@ import argparse
 
 from blocks.algorithms import GradientDescent, Adam, CompositeRule, StepClipping
 from blocks.extensions import Timing, Printing, FinishAfter, ProgressBar
-from blocks.extensions.monitoring import TrainingDataMonitoring, DataStreamMonitoring
-from blocks.extensions.saveload import Checkpoint
+from blocks.extensions.monitoring import TrainingDataMonitoring
 from blocks.main_loop import MainLoop
 from blocks.monitoring import aggregation
 from blocks.select import Selector
@@ -68,16 +67,14 @@ data_stream_valid = PadAndAddMasks(
 #   detect exploding gradient problems
 # - validation cost once every epoch
 monitor_grad = TrainingDataMonitoring(variables=[cross_ent, aggregation.mean(algorithm.total_gradient_norm),
-                                                 aggregation.mean(algorithm.total_step_norm)], every_n_batches=200,
+                                                 aggregation.mean(algorithm.total_step_norm)], after_epoch=True,
                                       prefix="training")
-monitor_valid = DataStreamMonitoring(data_stream=data_stream_valid, variables=[cross_ent], every_n_epochs=1,
-                                     prefix="validation")
 early_stopping = EarlyStopping(variables=[cross_ent], data_stream=data_stream_valid,
                                path="seqgen_" + args.type + "_" + "_".join([str(d) for d in network.hidden_dims]) + ".pkl",
-                               tolerance=3)
+                               tolerance=4, prefix="validation")
 
 main_loop = MainLoop(algorithm=algorithm, data_stream=data_stream, model=gen_model,
                      extensions=[monitor_grad, early_stopping, FinishAfter(after_n_epochs=args.epochs), ProgressBar(),
-                                 Timing(), Printing(every_n_batches=200)])
+                                 Timing(), Printing()])
 
 main_loop.run()
