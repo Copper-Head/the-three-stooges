@@ -11,7 +11,7 @@ from fuel.datasets.hdf5 import H5PYDataset
 from fuel.schemes import SequentialScheme, ShuffledScheme
 from fuel.streams import DataStream
 
-from custom_blocks import PadAndAddMasks
+from custom_blocks import PadAndAddMasks, EarlyStopping
 from network import *
 
 
@@ -62,7 +62,6 @@ data_stream_valid = PadAndAddMasks(
     DataStream.default_stream(dataset=valid_data, iteration_scheme=SequentialScheme(valid_data.num_examples,
                                                                                     batch_size=32)),
     produces_examples=False)
-save = Checkpoint("seqgen_" + args.type + '_' + '_'.join([str(d) for d in network.hidden_dims]) + ".pkl")
 
 # monitor:
 # - training cost every 200 batches (computed along the way, so cheap to do), as well as gradient and step lengths to
@@ -73,9 +72,12 @@ monitor_grad = TrainingDataMonitoring(variables=[cross_ent, aggregation.mean(alg
                                       prefix="training")
 monitor_valid = DataStreamMonitoring(data_stream=data_stream_valid, variables=[cross_ent], every_n_epochs=1,
                                      prefix="validation")
+early_stopping = EarlyStopping(variables=[cross_ent], data_stream=data_stream_valid,
+                               path="seqgen_" + args.type + "_" + "_".join([str(d) for d in network.hidden_dims]) + ".pkl",
+                               tolerance=3)
 
 main_loop = MainLoop(algorithm=algorithm, data_stream=data_stream, model=gen_model,
-                     extensions=[monitor_grad, monitor_valid, FinishAfter(after_n_epochs=args.epochs), ProgressBar(),
-                                 Timing(), Printing(every_n_batches=200), save])
+                     extensions=[monitor_grad, early_stopping, FinishAfter(after_n_epochs=args.epochs), ProgressBar(),
+                                 Timing(), Printing(every_n_batches=200)])
 
 main_loop.run()
