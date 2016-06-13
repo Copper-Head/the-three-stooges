@@ -14,7 +14,6 @@ from blocks.model import Model
 from blocks.monitoring import aggregation
 from blocks.select import Selector
 from blocks.serialization import load_parameters
-from enum import Enum
 from fuel.datasets.hdf5 import H5PYDataset
 from fuel.schemes import SequentialScheme, ShuffledScheme
 from fuel.streams import DataStream
@@ -23,7 +22,7 @@ from theano import tensor
 from custom_blocks import PadAndAddMasks
 
 
-class NetworkType(Enum):
+class NetworkType(object):
     """
     This enum represents the three types of networks we're looking at.
     """
@@ -45,7 +44,7 @@ class Network(object):
     generator -- the blocks SequenceGenerator object
     hidden_dims -- the dimensions of the hidden layers
     """
-    def __init__(self, network_type=NetworkType.SIMPLE_RNN.value, clipping=1.0, input_dim_file='onehot_size.npy', hidden_dims=[512, 512, 512], embed_dim=30):
+    def __init__(self, network_type=NetworkType.SIMPLE_RNN, clipping=1.0, input_dim_file='onehot_size.npy', hidden_dims=[512, 512, 512], embed_dim=30):
         char_seq = tensor.imatrix("character_seqs")
         mask = tensor.matrix("seq_mask")
         input_dim = numpy.load(input_dim_file)
@@ -55,14 +54,14 @@ class Network(object):
         # all RNNs are called "layer" so we don't need to use different by-name-filters for different rnn types later when
         # sampling
         # note that RecurrentStack automatically appends #0, #1 etc. to the names
-        if network_type == NetworkType.SIMPLE_RNN.value:
+        if network_type == NetworkType.SIMPLE_RNN:
             rnns = [SimpleRecurrent(dim=hidden_dims[0], activation=Tanh(), name="layer"),
             SimpleRecurrent(dim=hidden_dims[1], activation=Tanh(), name="layer"),
             SimpleRecurrent(dim=hidden_dims[2], activation=Tanh(), name="layer")]
-        elif network_type == NetworkType.GRU.value:
+        elif network_type == NetworkType.GRU:
             rnns = [GatedRecurrent(dim=hidden_dims[0], name="layer"), GatedRecurrent(dim=hidden_dims[1], name="layer"),
             GatedRecurrent(dim=hidden_dims[2], name="layer")]
-        elif network_type == NetworkType.LSTM.value:
+        elif network_type == NetworkType.LSTM:
             rnns = [LSTM(dim=hidden_dims[0], name="layer"), LSTM(dim=hidden_dims[1], name="layer"),
             LSTM(dim=hidden_dims[2], name="layer")]
         else:

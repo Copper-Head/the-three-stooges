@@ -42,7 +42,7 @@ init_state0 = param_dict["/sequencegenerator/with_fake_attention/transition/laye
 init_state1 = param_dict["/sequencegenerator/with_fake_attention/transition/layer#1.initial_state"]
 init_state2 = param_dict["/sequencegenerator/with_fake_attention/transition/layer#2.initial_state"]
 # LSTMs have cells that are separate from the states. these have to be updated manually in the same manner as the states
-is_lstm = args.type == NetworkType.LSTM.value
+is_lstm = args.type == NetworkType.LSTM
 if is_lstm:
     init_cells0 = param_dict["/sequencegenerator/with_fake_attention/transition/layer#0.initial_cells"]
     init_cells1 = param_dict["/sequencegenerator/with_fake_attention/transition/layer#1.initial_cells"]

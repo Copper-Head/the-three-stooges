@@ -23,8 +23,8 @@ from network import *
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-c", "--clipping", default=1.0, type=float, help="Step clipping threshold (default: 1)")
-parser.add_argument("-t", "--type", default="simple", help="Type of RNN ("+NetworkType.SIMPLE_RNN.value+", "+\
-                                                           NetworkType.GRU.value+" or "+NetworkType.LSTM.value+")")
+parser.add_argument("-t", "--type", default="simple", help="Type of RNN ("+NetworkType.SIMPLE_RNN+", "+\
+                                                           NetworkType.GRU+" or "+NetworkType.LSTM+")")
 parser.add_argument("-e", "--epochs", default=0, type=int, help="Stop after this many epochs (default: 0)")
 args = parser.parse_args()
 
