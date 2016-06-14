@@ -119,7 +119,7 @@ class EarlyStopping(SimpleExtension, MonitoringExtension):
             self.n_since_improvement = 0
         else:
             logger.info("No improvement since the last measure! Tolerating " +
-                        str(self.tolerance - self.n_since_improvement)) + " more..."
+                        str(self.tolerance - self.n_since_improvement) + " more...")
             self.n_since_improvement += 1
         self.last_value = current_value
         # if we have an improvement over the best yet, we store that and make a checkpoint
