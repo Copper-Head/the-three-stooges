@@ -80,4 +80,4 @@ class Network(object):
     def set_parameters(self, model_file):
         with open(model_file, 'rb') as f:
             params = load_parameters(f)
-        self.gen_model.set_parameter_values(params)
+        self.cost_model.set_parameter_values(params)

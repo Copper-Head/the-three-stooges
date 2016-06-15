@@ -2,6 +2,7 @@ import argparse
 from network import *
 
 import pip, re, sys
+from blocks.serialization import load
 
 
 inst_pckgs = pip.get_installed_distributions()
@@ -24,6 +25,13 @@ if not args.file:
 
 fname = args.file
 
+
+ml = load(open(fname))
+cost_model = ml.model
+print cost_model.auxilliary_variables
+
+"""
+
 kwargs = {'network_type': args.type}
 
 if args.readdims:
@@ -35,7 +43,7 @@ nt.set_parameters(fname)
 with open("ind_to_char.pkl", 'rb') as icf:
     ind_to_char = cPickle.load(icf)
 
-param_dict = nt.gen_model.get_parameter_dict()
+param_dict = nt.cost_model.get_parameter_dict()
 
 # three layers means three different initial states
 init_state0 = param_dict["/sequencegenerator/with_fake_attention/transition/layer#0.initial_state"]
@@ -48,7 +56,7 @@ if is_lstm:
     init_cells1 = param_dict["/sequencegenerator/with_fake_attention/transition/layer#1.initial_cells"]
     init_cells2 = param_dict["/sequencegenerator/with_fake_attention/transition/layer#2.initial_cells"]
 
-rnn_sample = nt.gen_model.get_theano_function()
+rnn_sample = nt.cost.get_theano_function()
 
 # save the trained initial state to be able to run multiple samples
 init_origin0 = init_state0.get_value()
@@ -89,3 +97,4 @@ while 1:
         raw_input("\nAnother sequence?")
     else:
         input("\nAnother sequence?")
+"""
