@@ -5,7 +5,6 @@ from blocks.extensions import Timing, Printing, FinishAfter, ProgressBar
 from blocks.extensions.monitoring import TrainingDataMonitoring
 from blocks.main_loop import MainLoop
 from blocks.monitoring import aggregation
-from blocks.select import Selector
 from fuel.datasets.hdf5 import H5PYDataset
 from fuel.schemes import SequentialScheme, ShuffledScheme
 from fuel.streams import DataStream
@@ -36,7 +35,7 @@ network = Network(**nkwargs)
 
 cross_ent = network.cost
 generator = network.generator
-gen_model = network.gen_model
+cost_model = network.cost_model
 
 # The thing that I feed into the parameters argument I copied from some blocks-examples thing. the good old computation
 # graph and then cg.parameters should work as well.
@@ -44,7 +43,7 @@ gen_model = network.gen_model
 # performed on the clipped gradient.
 # If you don't know what gradient clipping is: Define threshold T; if the length of the gradient is > T, scale it such
 # that its length is equal to T. This serves to make exploding gradients less severe.
-algorithm = GradientDescent(cost=cross_ent, parameters=list(Selector(generator).get_parameters().values()),
+algorithm = GradientDescent(cost=cross_ent, parameters=cost_model.parameters,
                             step_rule=CompositeRule(components=[StepClipping(threshold=args.clipping), Adam()]),
                             on_unused_sources="ignore")
 
@@ -73,7 +72,7 @@ early_stopping = EarlyStopping(variables=[cross_ent], data_stream=data_stream_va
                                path="seqgen_" + args.type + "_" + "_".join([str(d) for d in network.hidden_dims]) + ".pkl",
                                tolerance=4, prefix="validation")
 
-main_loop = MainLoop(algorithm=algorithm, data_stream=data_stream, model=gen_model,
+main_loop = MainLoop(algorithm=algorithm, data_stream=data_stream, model=cost_model,
                      extensions=[monitor_grad, early_stopping, FinishAfter(after_n_epochs=args.epochs), ProgressBar(),
                                  Timing(), Printing()])
 

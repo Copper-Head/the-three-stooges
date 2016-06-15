@@ -36,17 +36,17 @@ class PadAndAddMasks(Transformer):
         # Also build the mask
         # Note that, because the transformer doesn't do enough stuff yet, the sequences (batch[0]) are also transposed
         # to go from one-sequence-per-row (the way it's stored) to the weird Blocks RNN format (one-sequence-per-column)
-        padded_seqs = numpy.zeros((maxlen, batch[0].shape[0]), dtype="int32")
+        padded_seqs = numpy.zeros((batch[0].shape[0], maxlen), dtype="int32")
         # mask is int8 because apparently it's converted to float later, and higher ints would complain about loss of
         # precision
-        mask = numpy.zeros((maxlen, batch[0].shape[0]), dtype="int8")
+        mask = numpy.zeros((batch[0].shape[0], maxlen), dtype="int8")
         for (example_ind, example) in enumerate(batch[0]):
             # we go through the sequences and simply put them into the padded array; this will leave 0s wherever the
             # sequence is shorter than maxlen. similarly, mask will be set to 1 only up to the length of the respective
             # sequence
             # note that the transpose is done implicitly by essentially swapping indices
-            padded_seqs[:len(example), example_ind] = example
-            mask[:len(example), example_ind] = 1
+            padded_seqs[example_ind, :len(example)] = example
+            mask[example_ind, :len(example)] = 1
         return padded_seqs, mask
 
 
@@ -118,9 +118,10 @@ class EarlyStopping(SimpleExtension, MonitoringExtension):
             logger.info("Got an improvement from the last measure; tolerance reset.")
             self.n_since_improvement = 0
         else:
-            logger.info("No improvement since the last measure! Tolerating " +
-                        str(self.tolerance - self.n_since_improvement) + " more...")
             self.n_since_improvement += 1
+            if self.tolerance - self.n_since_improvement >= 0:
+                logger.info("No improvement since the last measure! Tolerating " +
+                            str(self.tolerance - self.n_since_improvement) + " more...")
         self.last_value = current_value
         # if we have an improvement over the best yet, we store that and make a checkpoint
         if current_value < self.best_value:

@@ -64,16 +64,15 @@ class Network(object):
                     name="readout"),
             transition=stacked_rnn, weights_init=Uniform(width=0.02), biases_init=Uniform(width=0.0001))
 
-        cross_ent = generator.cost(outputs=char_seq, mask=mask)
+        cross_ent = generator.cost(outputs=char_seq.T, mask=mask.T)
         cross_ent.name = "cross_entropy"
-        generating = generator.generate(n_steps=char_seq.shape[0], batch_size=char_seq.shape[1])
         generator.initialize()
 
         self.x = char_seq
         self.mask = mask
         self.input_dim = input_dim
         self.output_dim = output_dim
-        self.gen_model = Model(generating)
+        self.cost_model = Model(cross_ent)
         self.cost = cross_ent
         self.generator = generator
         self.hidden_dims = hidden_dims
