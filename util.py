@@ -45,9 +45,9 @@ class StateComputer(object):
         function needs one, as well. This mask is constructed below so you
         don't have to provide it yourself.
         """
-        if all(type(entry) is str for entry in sequence):
+        if all(isinstance(entry, str) for entry in sequence):
             converted_sequence = numpy.array([[self.map_char_to_ind[char] for char in sequence]], dtype="int32")
-        elif all(type(entry) is int for entry in sequence):
+        elif all(isinstance(entry, int) for entry in sequence):
             converted_sequence = numpy.array([sequence], dtype="int32")
         else:
             raise ValueError("Some or all sequence elements have invalid type (should be str or int)!")
