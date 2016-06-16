@@ -32,4 +32,4 @@ def get_state_computer(cost_model):
     inputs = cost_model.inputs
     inputs.sort(key=lambda var: var.name)
 
-    return function(inputs, state_variables)
+    return (inputs, state_variables, function(inputs, state_variables))
