@@ -20,7 +20,7 @@ def hinton_diagram(matrix, max_weight=None, ax=None, xticks=None):
     # ax.xaxis.set_major_locator(plt.NullLocator())
     ax.yaxis.set_major_locator(plt.NullLocator())
     if xticks:
-        ax.xaxis.set_tick_params(width=0)
+        ax.xaxis.set_tick_params(width=0, labelsize=30)
         ax.set_xticks(range(len(xticks)))
         ax.set_xticklabels(list(xticks))
 
