@@ -22,7 +22,7 @@ def hinton_diagram(matrix, max_weight=None, ax=None):
 
     for (x, y), w in np.ndenumerate(matrix):
         color = 'white' if w > 0 else 'black'
-        size = np.tanh(np.abs(w)) #/ max_weight
+        size = np.sqrt(np.abs(w) / max_weight)
         half = size / 2
         # half = 0.5
         rect = plt.Rectangle([x - half, y - half], size, size,
