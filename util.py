@@ -52,4 +52,4 @@ class StateComputer(object):
         else:
             raise ValueError("Some or all sequence elements have invalid type (should be str or int)!")
         mask = numpy.ones(converted_sequence.shape, dtype="int8")
-        return dict(zip(self.state_variables, self.func(sequence, mask)))
+        return dict(zip(self.state_variables, self.func(converted_sequence, mask)))
