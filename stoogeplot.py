@@ -17,8 +17,12 @@ def hinton_diagram(matrix, max_weight=None, ax=None, xticks=None):
 
     ax.patch.set_facecolor('gray')
     ax.set_aspect('equal', 'box')
-    ax.xaxis.set_major_locator(plt.NullLocator())
+    # ax.xaxis.set_major_locator(plt.NullLocator())
     ax.yaxis.set_major_locator(plt.NullLocator())
+    if xticks:
+        ax.xaxis.set_tick_params(width=0)
+        ax.set_xticks(range(len(xticks)))
+        ax.set_xticklabels(list(xticks))
 
     for (x, y), w in np.ndenumerate(matrix):
         color = 'white' if w > 0 else 'black'
@@ -32,6 +36,4 @@ def hinton_diagram(matrix, max_weight=None, ax=None, xticks=None):
     # Not quite sure what these do atm
     ax.autoscale_view()
     ax.invert_yaxis()
-    if xticks:
-        ax.set_xticklabels(list(xticks))
     return ax
