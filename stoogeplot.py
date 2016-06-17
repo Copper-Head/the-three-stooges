@@ -29,4 +29,4 @@ def hinton_diagram(matrix, max_weight=None, ax=None):
 
     # Not quite sure what these do atm
     ax.autoscale_view()
-    ax.invert_yaxis()
+    # ax.invert_yaxis()
