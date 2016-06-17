@@ -24,7 +24,7 @@ def hinton_diagram(matrix, max_weight=None, ax=None):
         color = 'white' if w > 0 else 'black'
         size = np.abs(w) / max_weight
         # half = size / 2
-        half = 1
+        half = 0.5
         rect = plt.Rectangle([x - half, y - half], size, size,
                              facecolor=color, edgecolor=color)
         ax.add_patch(rect)
