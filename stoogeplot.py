@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def hinton_diagram(matrix, max_weight=None, ax=None):
+def hinton_diagram(matrix, max_weight=None, ax=None, xticks=None):
     """Draw Hinton diagram for visualizing a weight matrix.
 
     Note that depending on the size of your matrix you might have to adjust
@@ -31,4 +31,7 @@ def hinton_diagram(matrix, max_weight=None, ax=None):
 
     # Not quite sure what these do atm
     ax.autoscale_view()
-    # ax.invert_yaxis()
+    ax.invert_yaxis()
+    if xticks:
+        ax.set_xticklabels(list(xticks))
+    return ax
