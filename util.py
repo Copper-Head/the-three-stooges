@@ -19,6 +19,7 @@ class StateComputer(object):
     def __init__(self, cost_model, map_char_to_ind):
         raw_state_vars = filter(self._relevant, cost_model.auxiliary_variables)
         self.state_variables = sorted(raw_state_vars, key=lambda var: var.name)
+        self.state_var_names = [var.name for var in self.state_variables]
         self.inputs = sorted(cost_model.inputs, key=lambda var: var.name)
         self.func = function(self.inputs, self.state_variables)
         self.map_char_to_ind = map_char_to_ind
@@ -52,4 +53,4 @@ class StateComputer(object):
         else:
             raise ValueError("Some or all sequence elements have invalid type (should be str or int)!")
         mask = numpy.ones(converted_sequence.shape, dtype="int8")
-        return dict(zip(self.state_variables, self.func(converted_sequence, mask)))
+        return dict(zip(self.state_var_names, self.func(converted_sequence, mask)))
