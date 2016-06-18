@@ -47,10 +47,12 @@ class StateComputer(object):
         don't have to provide it yourself.
         """
         if all(isinstance(entry, str) for entry in sequence):
-            converted_sequence = numpy.array([[self.map_char_to_ind[char] for char in sequence]], dtype="int32")
+            indices = [self.map_char_to_ind[char] for char in sequence]
+            converted_sequence = numpy.array([indices], dtype="int32")
         elif all(isinstance(entry, int) for entry in sequence):
             converted_sequence = numpy.array([sequence], dtype="int32")
         else:
-            raise ValueError("Some or all sequence elements have invalid type (should be str or int)!")
+            raise ValueError("Some or all sequence elements have invalid type "
+                             "(should be str or int)!")
         mask = numpy.ones(converted_sequence.shape, dtype="int8")
         return dict(zip(self.state_var_names, self.func(converted_sequence, mask)))
