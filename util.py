@@ -56,3 +56,16 @@ class StateComputer(object):
                              "(should be str or int)!")
         mask = numpy.ones(converted_sequence.shape, dtype="int8")
         return dict(zip(self.state_var_names, self.func(converted_sequence, mask)))
+
+
+def mark_seq_len(seq):
+    return numpy.arange(len(seq))
+
+
+def mark_word_boundaries(seq):
+    # define what's considered a word boundary. It's a set on purpose to permit
+    # adding more character types as needed.
+    wb = {
+        " "
+    }
+    return numpy.array([1 if char in wb else 0 for char in seq])
