@@ -83,14 +83,15 @@ state_to_compare = list(filter(lambda x: x.name == 'sequencegenerator_cost_matri
 aggr = AggregationBuffer(variables=[state_to_compare], use_take_last=True)
 aggr.initialize_aggregators()
 
-def modifier_function(iterations_done):
+def modifier_function(iterations_done, old_value):
     values = aggr.get_aggregated_values()
-    print('resetting layer state to:', values[state_to_compare.name][0][-1])
+    new_value = values[state_to_compare.name][0][-1]
+    print(iterations_done, 'iterations done.\nRESETTING INIT_STATE_VAL FROM', old_value, 'TO', new_value)
     aggr.initialize_aggregators()  # TODO what's the purpose of that? I observed them do it in the monitoring extensions after every request
-    return values[state_to_compare.name][0][-1]
+    return new_value
 
-# TODO: does after_batch=False imply "before every batch"?
-init_state_modifier = SharedVariableModifier(initial_states[2], num_args=1, function=modifier_function, after_batch=False)
+# TODO: need to figure out how to influence the point in time when this is actually executed
+init_state_modifier = SharedVariableModifier(initial_states[2], function=modifier_function, after_batch=True)
 
 monitor_grad = TrainingDataMonitoring(variables=[cross_ent, aggregation.mean(algorithm.total_gradient_norm),
                                                  aggregation.mean(algorithm.total_step_norm), initial_states[2], state_to_compare], after_epoch=True,
