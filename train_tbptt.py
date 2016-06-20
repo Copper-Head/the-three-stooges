@@ -78,7 +78,10 @@ for k, v in char2ix.items():
 sc = StateComputer(network.cost_model, ix2char)
 state_to_compare = list(filter(lambda x: x.name == 'sequencegenerator_cost_matrix_states#2', sc.state_variables))[0]  # notice: python2 filter seems to return a list, but anyway
 
-init_state_modifier = SharedVariableModifier(initial_states[2], lambda iterations, old_val: array(state_to_compare.eval()[-1][0]))
+def modifier_function(iterations_done):
+    return state_to_compare.eval()[0][-1][0]
+
+init_state_modifier = SharedVariableModifier(initial_states[2], num_args=1, function=modifier_function)
 
 monitor_grad = TrainingDataMonitoring(variables=[cross_ent, aggregation.mean(algorithm.total_gradient_norm),
                                                  aggregation.mean(algorithm.total_step_norm), initial_states[2], state_to_compare], after_epoch=True,
@@ -90,7 +93,7 @@ early_stopping = EarlyStopping(variables=[cross_ent], data_stream=data_stream_va
                                tolerance=4, prefix="validation")
 
 main_loop = MainLoop(algorithm=algorithm, data_stream=data_stream, model=cost_model,
-                     extensions=[init_state_modifier, monitor_grad, FinishAfter(after_n_epochs=args.epochs), ProgressBar(),
+                     extensions=[init_state_modifier, early_stopping, monitor_grad, FinishAfter(after_n_epochs=args.epochs), ProgressBar(),
                                  Timing(), Printing()])
 
 main_loop.run()
