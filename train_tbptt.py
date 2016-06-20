@@ -3,13 +3,13 @@ import argparse
 from blocks.algorithms import GradientDescent, Adam, CompositeRule, StepClipping
 from blocks.extensions import Timing, Printing, FinishAfter, ProgressBar
 from blocks.extensions.monitoring import TrainingDataMonitoring
+from blocks.extensions.training import SharedVariableModifier
 from blocks.main_loop import MainLoop
 from blocks.monitoring import aggregation
 from fuel.datasets.hdf5 import H5PYDataset
 from fuel.schemes import SequentialScheme, ShuffledScheme
 from fuel.streams import DataStream
-from numpy import load
-from theano.tensor import TensorVariable
+from numpy import load, array
 
 from custom_blocks import PadAndAddMasks, EarlyStopping
 from network import *
@@ -43,7 +43,6 @@ cost_model = network.cost_model
 
 # do init_state stuff
 initial_states = network.initial_states
-
 
 # The thing that I feed into the parameters argument I copied from some blocks-examples thing. the good old computation
 # graph and then cg.parameters should work as well.
@@ -79,8 +78,7 @@ for k, v in char2ix.items():
 sc = StateComputer(network.cost_model, ix2char)
 state_to_compare = list(filter(lambda x: x.name == 'sequencegenerator_cost_matrix_states#2', sc.state_variables))[0]  # notice: python2 filter seems to return a list, but anyway
 
-# trying to bind the initial state of layer 3 (#2) to the output of it. Might cause trouble in timestep 0 with NaNs
-init_state_2 = state_to_compare  # does that cause a loop?
+init_state_modifier = SharedVariableModifier(initial_states[2], lambda: array(state_to_compare.get_value()[-1][0]))
 
 monitor_grad = TrainingDataMonitoring(variables=[cross_ent, aggregation.mean(algorithm.total_gradient_norm),
                                                  aggregation.mean(algorithm.total_step_norm), initial_states[2], state_to_compare], after_epoch=True,
@@ -92,7 +90,7 @@ early_stopping = EarlyStopping(variables=[cross_ent], data_stream=data_stream_va
                                tolerance=4, prefix="validation")
 
 main_loop = MainLoop(algorithm=algorithm, data_stream=data_stream, model=cost_model,
-                     extensions=[monitor_grad, early_stopping, FinishAfter(after_n_epochs=args.epochs), ProgressBar(),
+                     extensions=[init_state_modifier, monitor_grad, early_stopping, FinishAfter(after_n_epochs=args.epochs), ProgressBar(),
                                  Timing(), Printing()])
 
 main_loop.run()
