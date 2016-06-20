@@ -46,7 +46,7 @@ if __name__ == '__main__':
                 seqs.append(seq)
                 seq = []
 
-    data = array(seqs)
+    data = array(seqs).transpose()  # TODO correct?
 
     split_n = int(training_size * data.shape[0])
 
