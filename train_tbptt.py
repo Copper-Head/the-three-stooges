@@ -83,7 +83,7 @@ state_to_compare = list(filter(lambda x: x.name == 'sequencegenerator_cost_matri
 def modifier_function(iterations_done):
     aggr = AggregationBuffer(state_to_compare, use_take_last=True)
     values = aggr.get_aggregated_values()
-    print('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>', values[state_to_compare.name][0][-1][0])
+    print('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>', values[state_to_compare.name])
     return values[state_to_compare.name][0][-1][0]
 
 init_state_modifier = SharedVariableModifier(initial_states[2], num_args=1, function=modifier_function)
