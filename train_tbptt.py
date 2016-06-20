@@ -85,9 +85,9 @@ aggr.initialize_aggregators()
 
 def modifier_function(iterations_done):
     values = aggr.get_aggregated_values()
-    print('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>', values[state_to_compare.name][0][-1][0])
+    print('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>', values[state_to_compare.name][0][-1])
     aggr.initialize_aggregators()
-    return values[state_to_compare.name][0][-1][0]
+    return values[state_to_compare.name][0][-1]
 
 init_state_modifier = SharedVariableModifier(initial_states[2], num_args=1, function=modifier_function)
 
