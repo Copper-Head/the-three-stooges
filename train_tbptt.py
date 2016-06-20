@@ -77,7 +77,7 @@ for k, v in char2ix.items():
     ix2char[v] = k
 
 sc = StateComputer(network.cost_model, ix2char)
-state_to_compare = filter(lambda x: x.name == 'sequencegenerator_cost_matrix_states#2', sc.state_variables).__next__()
+state_to_compare = list(filter(lambda x: x.name == 'sequencegenerator_cost_matrix_states#2', sc.state_variables))[0]  # notice: python2 filter seems to return a list, but anyway
 
 monitor_grad = TrainingDataMonitoring(variables=[cross_ent, aggregation.mean(algorithm.total_gradient_norm),
                                                  aggregation.mean(algorithm.total_step_norm), network.initial_states[2], state_to_compare], after_epoch=True,
