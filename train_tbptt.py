@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import argparse
 
 from blocks.algorithms import GradientDescent, Adam, CompositeRule, StepClipping
@@ -84,11 +86,14 @@ aggr = AggregationBuffer(variables=[state_to_compare], use_take_last=True)
 aggr.initialize_aggregators()
 
 def modifier_function(iterations_done, old_value):
-    values = aggr.get_aggregated_values()
-    new_value = values[state_to_compare.name][0][-1]
-    print(iterations_done, 'iterations done.\nRESETTING INIT_STATE_VAL FROM', old_value, 'TO', new_value)
-    aggr.initialize_aggregators()  # TODO what's the purpose of that? I observed them do it in the monitoring extensions after every request
-    return new_value
+    if iterations_done%100:
+        return old_value
+    else:
+        values = aggr.get_aggregated_values()
+        new_value = values[state_to_compare.name][0][-1]
+        print(iterations_done, 'iterations done.\nRESETTING INIT_STATE_VAL FROM', old_value, 'TO', new_value)
+        aggr.initialize_aggregators()  # TODO what's the purpose of that? I observed them do it in the monitoring extensions after every request
+        return new_value
 
 # TODO: need to figure out how to influence the point in time when this is actually executed
 init_state_modifier = SharedVariableModifier(initial_states[2], function=modifier_function, after_batch=True)
