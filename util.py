@@ -55,7 +55,19 @@ class StateComputer(object):
             raise ValueError("Some or all sequence elements have invalid type "
                              "(should be str or int)!")
         mask = numpy.ones(converted_sequence.shape, dtype="int8")
-        return dict(zip(self.state_var_names, self.func(converted_sequence, mask)))
+        computed_aux_vars = self.func(converted_sequence, mask)
+        flattened_aux_vars = map(drop_batch_dim, computed_aux_vars)
+        return dict(zip(self.state_var_names, flattened_aux_vars))
+
+
+def drop_batch_dim(array_with_single_dims):
+    """When reading in one sentence at a time the batch dimension is superflous.
+
+    Using numpy.squeeze we get rid of it. This relies on that dimension being "1".
+    Moreover, `squeeze` will remove ALL dimensions that are equal to 1, so be careful
+    what you pass to this function.
+    """
+    return numpy.squeeze(array_with_single_dims)
 
 
 def mark_seq_len(seq):
