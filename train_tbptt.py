@@ -77,9 +77,10 @@ for k, v in char2ix.items():
     ix2char[v] = k
 
 sc = StateComputer(network.cost_model, ix2char)
+state_to_compare = filter(lambda x: x.name == 'sequencegenerator_cost_matrix_states#2', sc.state_variables).__next__()
 
 monitor_grad = TrainingDataMonitoring(variables=[cross_ent, aggregation.mean(algorithm.total_gradient_norm),
-                                                 aggregation.mean(algorithm.total_step_norm), network.initial_states[2]], after_epoch=True,
+                                                 aggregation.mean(algorithm.total_step_norm), network.initial_states[2], state_to_compare], after_epoch=True,
                                       prefix="training")
 #monitor_init_states = TrainingDataMonitoring(variables=[network.initial_states[2]], after_epoch=True, prefix='training')
 
