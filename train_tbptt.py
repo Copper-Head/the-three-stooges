@@ -83,7 +83,7 @@ for k, v in char2ix.items():
 sc = StateComputer(network.cost_model, ix2char)
 
 monitor_grad = TrainingDataMonitoring(variables=[cross_ent, aggregation.mean(algorithm.total_gradient_norm),
-                                                 aggregation.mean(algorithm.total_step_norm), *sc.state_variables], after_epoch=True,
+                                                 aggregation.mean(algorithm.total_step_norm)]+sc.state_variables, after_epoch=True,
                                       prefix="training")
 early_stopping = EarlyStopping(variables=[cross_ent], data_stream=data_stream_valid,
                                path="seqgen_" + args.type + "_" + "_".join([str(d) for d in network.hidden_dims]) + ".pkl",
