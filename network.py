@@ -76,6 +76,17 @@ class Network(object):
         self.cost = cross_ent
         self.generator = generator
         self.hidden_dims = hidden_dims
+        init_states = []
+        for rnn in rnns:
+            init_state = None
+            i = 0
+            while i<len(rnn.parameters) and not init_state:
+                if rnn.parameters[i].name == 'initial_state':
+                    init_state = rnn.parameters[i]
+                i += 1
+            if init_state:
+                init_states.append(init_state)
+        self.initial_states = init_states
 
     def set_parameters(self, model_file):
         with open(model_file, 'rb') as f:
