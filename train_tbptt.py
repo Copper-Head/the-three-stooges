@@ -84,7 +84,7 @@ def modifier_function(iterations_done):
     aggr = AggregationBuffer(variables=[state_to_compare], use_take_last=True)
     aggr.initialize_aggregators()
     values = aggr.get_aggregated_values()
-    print('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>', values[state_to_compare.name])
+    print('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>', values)
     return values[state_to_compare.name][0][-1][0]
 
 init_state_modifier = SharedVariableModifier(initial_states[2], num_args=1, function=modifier_function)
