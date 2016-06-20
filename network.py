@@ -20,6 +20,7 @@ class NetworkType(object):
 class Network(object):
     """
     This class builds our desired network (for type see NetworkType) for training and/or sampling and inspection purposes.
+    Note: If you provide the input dimension as int (> 0), the input_dim_file will be ignored!
     The following attributes are available:
     x -- the char sequence tensor
     mask -- the mask
@@ -27,13 +28,14 @@ class Network(object):
     output_dim -- the output dimension, always equal to input_dimension
     gen_model -- the model
     cost -- the cost function (type CategoricalCrossEntropy)
+    cost_model -- a model of the cost function
     generator -- the blocks SequenceGenerator object
     hidden_dims -- the dimensions of the hidden layers
     """
-    def __init__(self, network_type=NetworkType.SIMPLE_RNN, input_dim_file='onehot_size.npy', hidden_dims=[512, 512, 512], embed_dim=30):
+    def __init__(self, network_type=NetworkType.SIMPLE_RNN, input_dim_file='onehot_size.npy', input_dim=0, hidden_dims=[512, 512, 512], embed_dim=30):
         char_seq = tensor.imatrix("character_seqs")
         mask = tensor.matrix("seq_mask")
-        input_dim = numpy.load(input_dim_file)
+        input_dim = input_dim if input_dim else numpy.load(input_dim_file)
         output_dim = input_dim
 
         # Stack of three RNNs (if this is too much we can of course use a single layer for the beginning).
