@@ -7,6 +7,7 @@ from blocks.extensions.training import SharedVariableModifier
 from blocks.main_loop import MainLoop
 from blocks.monitoring import aggregation
 from blocks.monitoring.evaluators import AggregationBuffer
+from blocks.monitoring.aggregation import take_last
 from fuel.datasets.hdf5 import H5PYDataset
 from fuel.schemes import SequentialScheme, ShuffledScheme
 from fuel.streams import DataStream
@@ -81,7 +82,7 @@ sc = StateComputer(network.cost_model, ix2char)
 state_to_compare = list(filter(lambda x: x.name == 'sequencegenerator_cost_matrix_states#2', sc.state_variables))[0]  # notice: python2 filter seems to return a list, but anyway
 
 def modifier_function(iterations_done):
-    aggr = AggregationBuffer(variables=[state_to_compare], use_take_last=True)
+    aggr = AggregationBuffer(variables=[take_last(state_to_compare)], use_take_last=True)
     aggr.initialize_aggregators()
     values = aggr.get_aggregated_values()
     print('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>', values)
