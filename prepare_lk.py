@@ -28,7 +28,7 @@ if __name__ == '__main__':
     di = 0  # debug
     with open(data_location) as f:
         c = '#'
-        while c and di < 100:
+        while c and di < 1000:
             di += 1
             try:
                 c = f.read(1)
