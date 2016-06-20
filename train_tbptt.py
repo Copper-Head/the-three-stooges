@@ -79,16 +79,16 @@ for k, v in char2ix.items():
 sc = StateComputer(network.cost_model, ix2char)
 
 monitor_grad = TrainingDataMonitoring(variables=[cross_ent, aggregation.mean(algorithm.total_gradient_norm),
-                                                 aggregation.mean(algorithm.total_step_norm)], after_epoch=True,
+                                                 aggregation.mean(algorithm.total_step_norm), network.initial_states[2]], after_epoch=True,
                                       prefix="training")
-monitor_init_states = TrainingDataMonitoring(variables=[network.initial_states[2]], after_epoch=True, prefix='training')
+#monitor_init_states = TrainingDataMonitoring(variables=[network.initial_states[2]], after_epoch=True, prefix='training')
 
 early_stopping = EarlyStopping(variables=[cross_ent], data_stream=data_stream_valid,
                                path="seqgen_" + args.type + "_" + "_".join([str(d) for d in network.hidden_dims]) + ".pkl",
                                tolerance=4, prefix="validation")
 
 main_loop = MainLoop(algorithm=algorithm, data_stream=data_stream, model=cost_model,
-                     extensions=[monitor_init_states, early_stopping, FinishAfter(after_n_epochs=args.epochs), ProgressBar(),
+                     extensions=[monitor_grad, early_stopping, FinishAfter(after_n_epochs=args.epochs), ProgressBar(),
                                  Timing(), Printing()])
 
 main_loop.run()
