@@ -12,8 +12,7 @@ from blocks.monitoring.evaluators import AggregationBuffer
 from fuel.datasets.hdf5 import H5PYDataset
 from fuel.schemes import SequentialScheme, ShuffledScheme
 from fuel.streams import DataStream
-from numpy import load, array
-from theano import function
+from numpy import load, zeros
 
 from custom_blocks import PadAndAddMasks, EarlyStopping
 from network import *
@@ -99,7 +98,7 @@ def modifier_function(iterations_done, old_value):
 init_state_modifier = SharedVariableModifier(initial_states[2], function=modifier_function, after_batch=True)
 
 monitor_grad = TrainingDataMonitoring(variables=[cross_ent, aggregation.mean(algorithm.total_gradient_norm),
-                                                 aggregation.mean(algorithm.total_step_norm), initial_states[2], state_to_compare], after_epoch=True,
+                                                 aggregation.mean(algorithm.total_step_norm)]+initial_states+[state_to_compare], after_epoch=True,
                                       prefix="training")
 
 early_stopping = EarlyStopping(variables=[cross_ent], data_stream=data_stream_valid,

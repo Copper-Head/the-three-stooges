@@ -79,6 +79,7 @@ class Network(object):
         self.generator = generator
         self.hidden_dims = hidden_dims
         init_states = []
+        id = 0
         for rnn in rnns:
             init_state = None
             i = 0
@@ -88,6 +89,8 @@ class Network(object):
                 i += 1
             if init_state:
                 init_states.append(init_state)
+                init_state.name += '#'+str(id)
+                id += 1
         self.initial_states = init_states
 
     def set_parameters(self, model_file):
