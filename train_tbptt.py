@@ -60,14 +60,10 @@ train_data = H5PYDataset(DATA_FILE_LOC, which_sets=("train",), load_in_memory=Tr
 valid_data = H5PYDataset(DATA_FILE_LOC, which_sets=("valid",), load_in_memory=True)
 
 # see custom_blocks for the transformer
-data_stream = PadAndAddMasks(
-    DataStream.default_stream(dataset=train_data, iteration_scheme=ShuffledScheme(train_data.num_examples,
-                                                                                  batch_size=1)),
-    produces_examples=False)  # I don't know what this does or why you have to pass it but apparently you do
-data_stream_valid = PadAndAddMasks(
-    DataStream.default_stream(dataset=valid_data, iteration_scheme=SequentialScheme(valid_data.num_examples,
-                                                                                    batch_size=1)),
-    produces_examples=False)
+data_stream = DataStream.default_stream(dataset=train_data, iteration_scheme=ShuffledScheme(train_data.num_examples,
+                                                                                  batch_size=1))
+data_stream_valid = DataStream.default_stream(dataset=valid_data, iteration_scheme=SequentialScheme(valid_data.num_examples,
+                                                                                    batch_size=1))
 
 # monitor:
 # - training cost every 200 batches (computed along the way, so cheap to do), as well as gradient and step lengths to
@@ -83,14 +79,16 @@ for k, v in char2ix.items():
 sc = StateComputer(network.cost_model, ix2char)
 
 monitor_grad = TrainingDataMonitoring(variables=[cross_ent, aggregation.mean(algorithm.total_gradient_norm),
-                                                 aggregation.mean(algorithm.total_step_norm)]+sc.state_variables, after_epoch=True,
+                                                 aggregation.mean(algorithm.total_step_norm)], after_epoch=True,
                                       prefix="training")
+monitor_init_states = TrainingDataMonitoring(variables=network.initial_states, after_epoch=True, prefix='training')
+
 early_stopping = EarlyStopping(variables=[cross_ent], data_stream=data_stream_valid,
                                path="seqgen_" + args.type + "_" + "_".join([str(d) for d in network.hidden_dims]) + ".pkl",
                                tolerance=4, prefix="validation")
 
 main_loop = MainLoop(algorithm=algorithm, data_stream=data_stream, model=cost_model,
-                     extensions=[monitor_grad, early_stopping, FinishAfter(after_n_epochs=args.epochs), ProgressBar(),
+                     extensions=[monitor_init_states, early_stopping, FinishAfter(after_n_epochs=args.epochs), ProgressBar(),
                                  Timing(), Printing()])
 
 main_loop.run()
