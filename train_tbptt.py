@@ -60,10 +60,10 @@ train_data = H5PYDataset(DATA_FILE_LOC, which_sets=("train",), load_in_memory=Tr
 valid_data = H5PYDataset(DATA_FILE_LOC, which_sets=("valid",), load_in_memory=True)
 
 # see custom_blocks for the transformer
-data_stream = DataStream.default_stream(dataset=train_data, iteration_scheme=ShuffledScheme(train_data.num_examples,
-                                                                                  batch_size=1))
-data_stream_valid = DataStream.default_stream(dataset=valid_data, iteration_scheme=SequentialScheme(valid_data.num_examples,
-                                                                                    batch_size=1))
+data_stream = PadAndAddMasks(DataStream.default_stream(dataset=train_data, iteration_scheme=ShuffledScheme(train_data.num_examples,
+                                                                                  batch_size=1)), produces_examples=False)
+data_stream_valid = PadAndAddMasks(DataStream.default_stream(dataset=valid_data, iteration_scheme=SequentialScheme(valid_data.num_examples,
+                                                                                    batch_size=1)), produces_examples=False)
 
 # monitor:
 # - training cost every 200 batches (computed along the way, so cheap to do), as well as gradient and step lengths to
