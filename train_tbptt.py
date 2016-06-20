@@ -90,7 +90,7 @@ early_stopping = EarlyStopping(variables=[cross_ent], data_stream=data_stream_va
                                tolerance=4, prefix="validation")
 
 main_loop = MainLoop(algorithm=algorithm, data_stream=data_stream, model=cost_model,
-                     extensions=[init_state_modifier, monitor_grad, early_stopping, FinishAfter(after_n_epochs=args.epochs), ProgressBar(),
+                     extensions=[init_state_modifier, monitor_grad, FinishAfter(after_n_epochs=args.epochs), ProgressBar(),
                                  Timing(), Printing()])
 
 main_loop.run()
