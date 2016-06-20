@@ -86,10 +86,11 @@ aggr.initialize_aggregators()
 def modifier_function(iterations_done):
     values = aggr.get_aggregated_values()
     print('resetting layer state to:', values[state_to_compare.name][0][-1])
-    #aggr.initialize_aggregators()
+    aggr.initialize_aggregators()  # TODO what's the purpose of that? I observed them do it in the monitoring extensions after every request
     return values[state_to_compare.name][0][-1]
 
-init_state_modifier = SharedVariableModifier(initial_states[2], num_args=1, function=modifier_function)
+# TODO: does after_batch=False imply "before every batch"?
+init_state_modifier = SharedVariableModifier(initial_states[2], num_args=1, function=modifier_function, after_batch=False)
 
 monitor_grad = TrainingDataMonitoring(variables=[cross_ent, aggregation.mean(algorithm.total_gradient_norm),
                                                  aggregation.mean(algorithm.total_step_norm), initial_states[2], state_to_compare], after_epoch=True,
@@ -103,6 +104,7 @@ main_loop = MainLoop(algorithm=algorithm, data_stream=data_stream, model=cost_mo
                      extensions=[init_state_modifier, monitor_grad, FinishAfter(after_n_epochs=args.epochs), ProgressBar(),
                                  Timing(), Printing()])
 
+# otherwise the AggragationBuffer will aggregate empty arrays
 main_loop.algorithm.add_updates(aggr.accumulation_updates)
 
 main_loop.run()
