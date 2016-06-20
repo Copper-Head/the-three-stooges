@@ -78,7 +78,7 @@ for k, v in char2ix.items():
 sc = StateComputer(network.cost_model, ix2char)
 state_to_compare = list(filter(lambda x: x.name == 'sequencegenerator_cost_matrix_states#2', sc.state_variables))[0]  # notice: python2 filter seems to return a list, but anyway
 
-init_state_modifier = SharedVariableModifier(initial_states[2], lambda iterations, old_val: array(state_to_compare.get_value()[-1][0]))
+init_state_modifier = SharedVariableModifier(initial_states[2], lambda iterations, old_val: array(state_to_compare.eval()[-1][0]))
 
 monitor_grad = TrainingDataMonitoring(variables=[cross_ent, aggregation.mean(algorithm.total_gradient_norm),
                                                  aggregation.mean(algorithm.total_step_norm), initial_states[2], state_to_compare], after_epoch=True,
