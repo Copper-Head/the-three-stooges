@@ -79,6 +79,8 @@ sc = StateComputer(network.cost_model, ix2char)
 state_to_compare = list(filter(lambda x: x.name == 'sequencegenerator_cost_matrix_states#2', sc.state_variables))[0]  # notice: python2 filter seems to return a list, but anyway
 
 def modifier_function(iterations_done):
+    print('>>>>>>>>>>>>>>>>>state to compare', state_to_compare)
+    print('>>>>>>>>>>>>>>>>>state evaluated:', state_to_compare.eval())
     return state_to_compare.eval()[0][-1][0]
 
 init_state_modifier = SharedVariableModifier(initial_states[2], num_args=1, function=modifier_function)
