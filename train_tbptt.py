@@ -79,8 +79,11 @@ for k, v in char2ix.items():
 sc = StateComputer(network.cost_model, ix2char)
 state_to_compare = list(filter(lambda x: x.name == 'sequencegenerator_cost_matrix_states#2', sc.state_variables))[0]  # notice: python2 filter seems to return a list, but anyway
 
+# trying to bind the initial state of layer 3 (#2) to the output of it. Might cause trouble in timestep 0 with NaNs
+init_state_2 = state_to_compare  # does that cause a loop?
+
 monitor_grad = TrainingDataMonitoring(variables=[cross_ent, aggregation.mean(algorithm.total_gradient_norm),
-                                                 aggregation.mean(algorithm.total_step_norm), network.initial_states[2], state_to_compare], after_epoch=True,
+                                                 aggregation.mean(algorithm.total_step_norm), initial_states[2], state_to_compare], after_epoch=True,
                                       prefix="training")
 #monitor_init_states = TrainingDataMonitoring(variables=[network.initial_states[2]], after_epoch=True, prefix='training')
 
