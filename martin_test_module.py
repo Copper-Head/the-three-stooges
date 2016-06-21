@@ -11,6 +11,7 @@ import inspect
 import logging
 from numpy import array
 from picklable_itertools.extras import equizip
+from theano.tensor import TensorVariable
 
 logger = logging.getLogger(__name__)
 unknown_scan_input = """
@@ -293,7 +294,7 @@ class NoResetSimpleRecurrent(SimpleRecurrent):
         self.dim = dim
         children = [activation]
         kwargs.setdefault('children', []).extend(children)
-        self._recent_states = None
+        self._next_states = TensorVariable(tensor.TensorType.Variable)
         super(NoResetSimpleRecurrent, self).__init__(dim, activation, **kwargs)
 
     @recurrent(sequences=['inputs', 'mask'], states=['states'],
@@ -311,19 +312,19 @@ class NoResetSimpleRecurrent(SimpleRecurrent):
             there is data available, 0 if not. Assumed to be 1-s
             only if not given.
         """
+        logger.info('APPLY CALLED, value of states: '+str(states))
         next_states = inputs + tensor.dot(states, self.W)
         next_states = self.children[0].apply(next_states)
         if mask:
             next_states = (mask[:, None] * next_states +
                            (1 - mask[:, None]) * states)
-        self._recent_states = next_states
+        self._next_states = next_states
         return next_states
 
     @application(outputs=apply.states)
     def initial_states(self, batch_size, *args, **kwargs):
-        if self._recent_states:
-            return self._recent_states
-        return tensor.repeat(shared(array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], dtype='float32'))[None, :], batch_size, 0)  # for testing I now only return a vector with a very characteristic sequence of floats NOTE: WORKED!!!
+        return self._next_states
+        # return tensor.repeat(shared(array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], dtype='float32'))[None, :], batch_size, 0)  # for testing I now only return a vector with a very characteristic sequence of floats NOTE: WORKED!!!
 
 
     ## TODO: possible options: 1) return states as they are and not initial states in initial_states() OR 2) have a look at recurrent-definition in BaseRecurrent
