@@ -7,6 +7,7 @@ from blocks.model import Model
 from blocks.serialization import load_parameters
 from theano import tensor
 
+from martin_test_module import NoResetSimpleRecurrent
 
 class NetworkType(object):
     """
@@ -16,6 +17,16 @@ class NetworkType(object):
     GRU = 'gru'
     LSTM = 'lstm'
 
+    @staticmethod
+    def get_brick(network_type, reset_states=True):
+        if network_type == NetworkType.SIMPLE_RNN:
+            return SimpleRecurrent if reset_states else NoResetSimpleRecurrent
+        elif network_type == NetworkType.LSTM:
+            return LSTM
+        elif network_type == NetworkType.GRU:
+            return GatedRecurrent
+        else:
+            raise ValueError("Invalid RNN type specified!")
 
 class Network(object):
     """
@@ -32,7 +43,7 @@ class Network(object):
     generator -- the blocks SequenceGenerator object
     hidden_dims -- the dimensions of the hidden layers
     """
-    def __init__(self, network_type=NetworkType.SIMPLE_RNN, input_dim_file='onehot_size.npy', input_dim=0, hidden_dims=[512, 512, 512], embed_dim=30):
+    def __init__(self, network_type=NetworkType.SIMPLE_RNN, input_dim_file='onehot_size.npy', input_dim=0, hidden_dims=[512, 512, 512], embed_dim=30, reset_states=True):
         char_seq = tensor.imatrix("character_seqs")
         mask = tensor.matrix("seq_mask")
         input_dim = input_dim if input_dim else numpy.load(input_dim_file)
@@ -42,14 +53,7 @@ class Network(object):
         # All RNNs are called "layer" so we don't need to use different by-name-filters for different rnn types later
         # when sampling.
         # Note that RecurrentStack automatically appends #0, #1 etc. to the names.
-        if network_type == NetworkType.SIMPLE_RNN:
-            brick = SimpleRecurrent
-        elif network_type == NetworkType.GRU:
-            brick = GatedRecurrent
-        elif network_type == NetworkType.LSTM:
-            brick = LSTM
-        else:
-            raise ValueError("Invalid RNN type specified!")
+        brick = NetworkType.get_brick(network_type, reset_states)
 
         rnns = [brick(dim=dim, activation=Tanh(), name='layer') for dim in hidden_dims]
         stacked_rnn = RecurrentStack(transitions=rnns, skip_connections=True, name="transition")
