@@ -116,7 +116,10 @@ main_loop = MainLoop(algorithm=algorithm, data_stream=data_stream, model=cost_mo
                      extensions=[monitor_grad, FinishAfter(after_n_epochs=args.epochs), ProgressBar(),
                                  Timing(), Printing()])
 
-# otherwise the AggragationBuffer will aggregate empty arrays
-#main_loop.algorithm.add_updates(aggr.accumulation_updates)  # FIXME: I assume, this is not updating often enough, only once per epoch
+# remove update
+updates = main_loop.algorithm.updates()
+init_state_update = list(filter(lambda u: u[0] == init_state_2, updates))[0]
+updates.remove(init_state_update)
+print('\nUPDATES:', main_loop.algorithm.updates(),'\n')
 
 main_loop.run()
