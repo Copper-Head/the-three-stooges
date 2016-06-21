@@ -248,7 +248,7 @@ def no_reset_recurrent(*args, **kwargs):
                 name='{}_{}_scan'.format(
                     brick.name, application.application_name),
                 **scan_kwargs)
-            logger.info('THEANO_SCAN_UPDATES: '+str(updates))
+            logger.info('THEANO_SCAN_UPDATES: '+str(updates.items()))
             result = pack(result)
             if return_initial_states:
                 # Undo Subtensor
