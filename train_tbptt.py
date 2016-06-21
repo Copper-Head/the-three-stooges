@@ -80,6 +80,7 @@ states_dict = {}
 for state in states_to_compare:
     states_dict[int(state.name.replace('sequencegenerator_cost_matrix_states#', ''))] = state
 
+print(states_dict)
 network.register_states(states_dict)
 
 # The thing that I feed into the parameters argument I copied from some blocks-examples thing. the good old computation
