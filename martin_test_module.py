@@ -19,6 +19,7 @@ Your function uses a non-shared variable other than those given \
 by scan explicitly. That can significantly slow down `tensor.grad` \
 call. Did you forget to declare it in `contexts`?"""
 
+
 class OverrideStateReset(StepRule):
 
     def __init__(self, init_states_to_states_dict):
@@ -181,6 +182,8 @@ def no_reset_recurrent(*args, **kwargs):
                         kwargs[state_name] = (
                             kwargs[state_name](state_name, batch_size,
                                                *args, **kwargs))
+                # I suspect the following lines to be responsible for the reset of the states, so I exclude them
+                """
                 else:
                     try:
                         kwargs[state_name] = initial_states[state_name]
@@ -188,6 +191,7 @@ def no_reset_recurrent(*args, **kwargs):
                         raise KeyError(
                             "no initial state for '{}' of the brick {}".format(
                                 state_name, brick.name))
+                """
             states_given = dict_subset(kwargs, application.states)
 
             # Theano issue 1772
