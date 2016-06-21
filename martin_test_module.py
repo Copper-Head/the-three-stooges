@@ -295,6 +295,16 @@ class NoResetSimpleRecurrent(SimpleRecurrent):
         children = [activation]
         kwargs.setdefault('children', []).extend(children)
         super(NoResetSimpleRecurrent, self).__init__(dim, activation, **kwargs)
+        self._state = None
+
+    def register_state(self, state):
+        """
+        very dirty
+        :param states: list of states to not be reset
+        :return:
+        """
+        self._state = state
+        logging.info(self.name+' received and registered state: '+self._state.name)
 
     @recurrent(sequences=['inputs', 'mask'], states=['states'],
                outputs=['states'], contexts=[])
@@ -311,7 +321,7 @@ class NoResetSimpleRecurrent(SimpleRecurrent):
             there is data available, 0 if not. Assumed to be 1-s
             only if not given.
         """
-        logger.info('APPLY CALLED, value of states: '+str(states))
+        logger.info('APPLY CALLED, value of states: '+str(states)+', brick='+str(self.name))
         next_states = inputs + tensor.dot(states, self.W)
         next_states = self.children[0].apply(next_states)
         if mask:
@@ -321,7 +331,7 @@ class NoResetSimpleRecurrent(SimpleRecurrent):
 
     @application(outputs=apply.states)
     def initial_states(self, batch_size, *args, **kwargs):
-        logger.info('INITIAL_STATES CALLED')
+        logger.info('INITIAL_STATES CALLED, brick='+str(self.name))
         return tensor.repeat(shared(array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], dtype='float32'))[None, :], batch_size, 0)  # for testing I now only return a vector with a very characteristic sequence of floats NOTE: WORKED!!!
 
 

@@ -74,7 +74,13 @@ for k, v in char2ix.items():
 
 sc = StateComputer(network.cost_model, ix2char)
 state_to_compare = list(filter(lambda x: x.name == 'sequencegenerator_cost_matrix_states#2', sc.state_variables))[0]  # notice: python2 filter seems to return a list, but anyway
+states_to_compare = list(filter(lambda x: 'sequencegenerator_cost_matrix_states#' in x.name, sc.state_variables))
 
+states_dict = {}
+for state in states_to_compare:
+    states_dict[int(state.name.replace('sequencegenerator_cost_matrix_states#', ''))] = state
+
+network.register_states(states_dict)
 
 # The thing that I feed into the parameters argument I copied from some blocks-examples thing. the good old computation
 # graph and then cg.parameters should work as well.

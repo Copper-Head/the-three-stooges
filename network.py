@@ -82,6 +82,7 @@ class Network(object):
         self.cost = cross_ent
         self.generator = generator
         self.hidden_dims = hidden_dims
+        self.transitions = rnns
         init_states = []
         id = 0
         for rnn in rnns:
@@ -96,6 +97,13 @@ class Network(object):
                 init_state.name += '#'+str(id)
                 id += 1
         self.initial_states = init_states
+
+    def register_states(self, states_dict):
+        try:
+            for i in range(len(states_dict)):
+                self.transitions[i].register_state(states_dict[i])
+        except AttributeError:
+            raise NotImplementedError('Transition {} not compatible with registering states.'.format(self.transitions[i]))  # FIXME Look for better error type later
 
     def set_parameters(self, model_file):
         with open(model_file, 'rb') as f:
