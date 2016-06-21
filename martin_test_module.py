@@ -187,7 +187,7 @@ def no_reset_recurrent(*args, **kwargs):
                 else:
                     try:
                         # kwargs[state_name] = initial_states[state_name]  # OLD
-                        kwargs[state_name] = shared(array([[1, 2, 3, 4, 5, 5, 4, 3, 2, 1], [1, 2, 3, 4, 5, 5, 4, 3, 2, 1], [1, 2, 3, 4, 5, 5, 4, 3, 2, 1]], dtype='float32'))# NEW
+                        kwargs[state_name] = tensor.repeat(shared(array([0, 10, 0, 10, 0, 0, 10, 0, 10, 0], dtype='float32'))[None, :], batch_size, 0)[state_name] # NEW
                         logger.info('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> DID IT WORK?')
                     except KeyError:
                         raise KeyError(
