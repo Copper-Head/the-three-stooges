@@ -117,6 +117,6 @@ main_loop = MainLoop(algorithm=algorithm, data_stream=data_stream, model=cost_mo
                                  Timing(), Printing()])
 
 # otherwise the AggragationBuffer will aggregate empty arrays
-main_loop.algorithm.add_updates(aggr.accumulation_updates)  # FIXME: I assume, this is not updating often enough, only once per epoch
+#main_loop.algorithm.add_updates(aggr.accumulation_updates)  # FIXME: I assume, this is not updating often enough, only once per epoch
 
 main_loop.run()
