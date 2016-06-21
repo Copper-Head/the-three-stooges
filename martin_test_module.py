@@ -279,7 +279,7 @@ class NoResetSimpleRecurrent(SimpleRecurrent):
         super(NoResetSimpleRecurrent, self).__init__(dim, activation, **kwargs)
 
     @no_reset_recurrent(sequences=['inputs', 'mask'], states=['states'],
-               outputs=['states'], contexts=[], test_argument='Here I am')
+               outputs=['states'], contexts=[])
     def apply(self, inputs, states, mask=None):
         """Apply the simple transition.
         Parameters
