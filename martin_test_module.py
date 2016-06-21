@@ -122,6 +122,7 @@ def no_reset_recurrent(*args, **kwargs):
                 state tensors. ``False`` by default.
 
             """
+            logger.info('>>>>>>>>>>>>>>> recurrent_apply called')
             # Extract arguments related to iteration and immediately relay the
             # call to the wrapped function if `iterate=False`
             iterate = kwargs.pop('iterate', True)
