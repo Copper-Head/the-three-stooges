@@ -98,6 +98,7 @@ class Network(object):
                 id += 1
         self.initial_states = init_states
 
+    @DeprecationWarning
     def register_states(self, states_dict):
         try:
             for i in range(len(states_dict)):

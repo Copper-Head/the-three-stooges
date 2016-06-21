@@ -100,7 +100,7 @@ def no_reset_recurrent(*args, **kwargs):
 
     """
 
-    most_recent_state_values = {}
+    most_recent_state_values = {}  # FIXME: REMOVE
 
     def recurrent_wrapper(application_function):
         arg_spec = inspect.getargspec(application_function)
@@ -248,6 +248,7 @@ def no_reset_recurrent(*args, **kwargs):
                 name='{}_{}_scan'.format(
                     brick.name, application.application_name),
                 **scan_kwargs)
+            logger.info('THEANO_SCAN_UPDATES: '+str(updates))
             result = pack(result)
             if return_initial_states:
                 # Undo Subtensor
@@ -297,6 +298,7 @@ class NoResetSimpleRecurrent(SimpleRecurrent):
         super(NoResetSimpleRecurrent, self).__init__(dim, activation, **kwargs)
         self._state = None
 
+    @DeprecationWarning
     def register_state(self, state):
         """
         very dirty
@@ -306,7 +308,7 @@ class NoResetSimpleRecurrent(SimpleRecurrent):
         self._state = state
         logger.info(self.name+' received and registered state: '+self._state.name)
 
-    @recurrent(sequences=['inputs', 'mask'], states=['states'],
+    @no_reset_recurrent(sequences=['inputs', 'mask'], states=['states'],
                outputs=['states'], contexts=[])
     def apply(self, inputs, states, mask=None):
         """Apply the simple transition.
@@ -332,8 +334,8 @@ class NoResetSimpleRecurrent(SimpleRecurrent):
     @application(outputs=apply.states)
     def initial_states(self, batch_size, *args, **kwargs):
         logger.info('INITIAL_STATES CALLED, brick='+str(self.name))
-        return tensor.repeat(self._state[0][-1][None, :], batch_size, 0)  # this is NEVER going to work
-        # return tensor.repeat(shared(array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], dtype='float32'))[None, :], batch_size, 0)  # for testing I now only return a vector with a very characteristic sequence of floats NOTE: WORKED!!!
+        # return tensor.repeat(self._state[0][-1][None, :], batch_size, 0)  # this does not work, since this method is called BEFORE state is registered
+        return tensor.repeat(shared(array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], dtype='float32'))[None, :], batch_size, 0)  # for testing I now only return a vector with a very characteristic sequence of floats NOTE: WORKED!!!
 
 
     ## TODO: possible options: 1) return states as they are and not initial states in initial_states() OR 2) have a look at recurrent-definition in BaseRecurrent
