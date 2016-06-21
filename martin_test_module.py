@@ -174,7 +174,8 @@ def no_reset_recurrent(*args, **kwargs):
             # Ensure that all initial states are available.
             initial_states = brick.initial_states(batch_size, as_dict=True,
                                                   *args, **kwargs)
-            for state_name in application.states:
+            for state_name in application.states:  # TODO another thing to try would be to just empty the application.states and see if that works
+                logger.info(most_recent_state_values)
                 dim = brick.get_dim(state_name)
                 if state_name in kwargs:
                     if isinstance(kwargs[state_name], NdarrayInitialization):
