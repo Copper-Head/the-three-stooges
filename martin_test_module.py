@@ -182,8 +182,8 @@ def no_reset_recurrent(*args, **kwargs):
                         kwargs[state_name] = (
                             kwargs[state_name](state_name, batch_size,
                                                *args, **kwargs))
-                # I suspect the following lines to be responsible for the reset of the states, so all I have to do – at
-                # least from what I think – is to set the state to its own value instead of to the init-state's value
+                # I suspect the following lines to be responsible for the reset of the states, so all I have to do -- at
+                # least from what I think -- is to set the state to its own value instead of to the init-state's value
                 else:
                     try:
                         # kwargs[state_name] = initial_states[state_name]  # OLD
