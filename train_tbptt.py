@@ -1,6 +1,7 @@
 from __future__ import print_function
 
 import argparse
+from collections import OrderedDict
 
 from blocks.algorithms import GradientDescent, Adam, CompositeRule, StepClipping
 from blocks.extensions import Timing, Printing, FinishAfter, ProgressBar
@@ -12,13 +13,15 @@ from blocks.monitoring.evaluators import AggregationBuffer
 from fuel.datasets.hdf5 import H5PYDataset
 from fuel.schemes import SequentialScheme, ShuffledScheme
 from fuel.streams import DataStream
-from numpy import load, zeros
+from numpy import load
+from theano import function
 
 from custom_blocks import PadAndAddMasks, EarlyStopping
 from network import *
 
 from prepare_lk import ALPHABET_FILE, OUT_FILE_NAME as DATA_FILE_LOC
 from util import StateComputer
+from martin_test_module import OverrideStateReset
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-c", "--clipping", default=1.0, type=float, help="Step clipping threshold (default: 1)")
@@ -46,16 +49,7 @@ cost_model = network.cost_model
 
 # do init_state stuff
 initial_states = network.initial_states
-
-# The thing that I feed into the parameters argument I copied from some blocks-examples thing. the good old computation
-# graph and then cg.parameters should work as well.
-# On the step rule: This means gradient clipping (threshold passed in as a command line argument) followed by Adam
-# performed on the clipped gradient.
-# If you don't know what gradient clipping is: Define threshold T; if the length of the gradient is > T, scale it such
-# that its length is equal to T. This serves to make exploding gradients less severe.
-algorithm = GradientDescent(cost=cross_ent, parameters=cost_model.parameters,
-                            step_rule=CompositeRule(components=[StepClipping(threshold=args.clipping), Adam()]),
-                            on_unused_sources="ignore")
+init_state_2 = initial_states[2]
 
 # data
 train_data = H5PYDataset(DATA_FILE_LOC, which_sets=("train",), load_in_memory=True)
@@ -81,6 +75,19 @@ for k, v in char2ix.items():
 sc = StateComputer(network.cost_model, ix2char)
 state_to_compare = list(filter(lambda x: x.name == 'sequencegenerator_cost_matrix_states#2', sc.state_variables))[0]  # notice: python2 filter seems to return a list, but anyway
 
+
+# The thing that I feed into the parameters argument I copied from some blocks-examples thing. the good old computation
+# graph and then cg.parameters should work as well.
+# On the step rule: This means gradient clipping (threshold passed in as a command line argument) followed by Adam
+# performed on the clipped gradient.
+# If you don't know what gradient clipping is: Define threshold T; if the length of the gradient is > T, scale it such
+# that its length is equal to T. This serves to make exploding gradients less severe.
+algorithm = GradientDescent(cost=cross_ent, parameters=cost_model.parameters,
+                            step_rule=CompositeRule(components=[StepClipping(threshold=args.clipping), Adam(), OverrideStateReset(OrderedDict({init_state_2 : state_to_compare}))]),
+                            on_unused_sources="ignore")
+
+
+"""
 aggr = AggregationBuffer(variables=[state_to_compare], use_take_last=True)
 aggr.initialize_aggregators()
 
@@ -93,6 +100,9 @@ def modifier_function(iterations_done, old_value):
 
 # TODO: need to figure out how to influence the point in time when this is actually executed
 init_state_modifier = SharedVariableModifier(initial_states[2], function=modifier_function, after_batch=True)
+"""
+
+#state_function = function([state_to_compare], initial_states[2], updates=[(init_state_2, state_to_compare[0][-1])]) #TODO look at this, this is how it basically works!
 
 monitor_grad = TrainingDataMonitoring(variables=[cross_ent, aggregation.mean(algorithm.total_gradient_norm),
                                                  aggregation.mean(algorithm.total_step_norm)]+initial_states+[state_to_compare], after_epoch=True,
@@ -103,10 +113,10 @@ early_stopping = EarlyStopping(variables=[cross_ent], data_stream=data_stream_va
                                tolerance=4, prefix="validation")
 
 main_loop = MainLoop(algorithm=algorithm, data_stream=data_stream, model=cost_model,
-                     extensions=[init_state_modifier, monitor_grad, FinishAfter(after_n_epochs=args.epochs), ProgressBar(),
+                     extensions=[monitor_grad, FinishAfter(after_n_epochs=args.epochs), ProgressBar(),
                                  Timing(), Printing()])
 
 # otherwise the AggragationBuffer will aggregate empty arrays
-main_loop.algorithm.add_updates(aggr.accumulation_updates)
+main_loop.algorithm.add_updates(aggr.accumulation_updates)  # FIXME: I assume, this is not updating often enough, only once per epoch
 
 main_loop.run()
