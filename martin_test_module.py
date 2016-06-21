@@ -220,6 +220,8 @@ def no_reset_recurrent(*args, **kwargs):
                 states_given[name] = tensor.unbroadcast(state,
                                                         *range(state.ndim))
 
+            logger.info('STATES_GIVEN: '+str(states_given.items())+ ' ('+brick.name+')')
+
             def scan_function(*args):
                 args = list(args)
                 arg_names = (list(sequences_given) +
@@ -248,9 +250,10 @@ def no_reset_recurrent(*args, **kwargs):
                 name='{}_{}_scan'.format(
                     brick.name, application.application_name),
                 **scan_kwargs)
-            logger.info('THEANO_SCAN_UPDATES: '+str(updates.items()))
+            logger.info('THEANO_SCAN_UPDATES: '+str(updates.items()))  # TODO: Remove print, but keep it for now: It shows, that scan is not responsible for the state reset
             result = pack(result)
             if return_initial_states:
+                logger.warn('return_initial_states turned true.')
                 # Undo Subtensor
                 for i in range(len(states_given)):
                     assert isinstance(result[i].owner.op,
