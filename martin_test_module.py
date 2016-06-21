@@ -36,6 +36,9 @@ class OverrideStateReset(StepRule):
         """
         init_states = [(param, self._dict[param] if param in self._dict else param) for param, value in previous_steps.items()]
         print('>>>>>>>>>>>>>>>>>>>>> DEBUG >>>>>>>>>>>>>>>>>>>>>>', init_states)
-        return self._dict, init_states
+        return_dict = self._dict.copy()
+        for param, value in previous_steps.items():
+            if not param in self._dict:
+                return_dict[param] = value
+        return return_dict, init_states
 
-    
