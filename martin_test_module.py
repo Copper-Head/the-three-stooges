@@ -187,7 +187,7 @@ def no_reset_recurrent(*args, **kwargs):
                 else:
                     try:
                         # kwargs[state_name] = initial_states[state_name]  # OLD
-                        kwargs[state_name] = array([1, 2, 3, 4, 5, 5, 4, 3, 2, 1], dtype='float32')# NEW
+                        kwargs[state_name] = shared(array([1, 2, 3, 4, 5, 5, 4, 3, 2, 1], dtype='float32'))# NEW
                         logger.info('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> DID IT WORK?')
                     except KeyError:
                         raise KeyError(
