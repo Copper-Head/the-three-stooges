@@ -33,11 +33,11 @@ class OverrideStateReset(StepRule):
             A list of tuples representing updates to be performed.
 
         """
-        init_states = [(param, self._dict[param] if param in self._dict else param) for param, value in previous_steps.items()]
-        print('>>>>>>>>>>>>>>>>>>>>> DEBUG >>>>>>>>>>>>>>>>>>>>>>', init_states)
-        return_dict = self._dict.copy()
+        updates = [(param, self._dict[param]) for param, value in previous_steps.items() if param in self._dict]
+        print('>>>>>>>>>>>>>>>>>>>>> DEBUG >>>>>>>>>>>>>>>>>>>>>>', updates)
+        step_dict = self._dict.copy()
         for param, value in previous_steps.items():
             if not param in self._dict:
-                return_dict[param] = value
-        return return_dict, init_states
+                step_dict[param] = value
+        return step_dict, updates
 
