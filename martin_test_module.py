@@ -293,6 +293,7 @@ class NoResetSimpleRecurrent(SimpleRecurrent):
         self.dim = dim
         children = [activation]
         kwargs.setdefault('children', []).extend(children)
+        self._recent_states = {}
         super(NoResetSimpleRecurrent, self).__init__(dim, activation, **kwargs)
 
     @recurrent(sequences=['inputs', 'mask'], states=['states'],
@@ -315,11 +316,12 @@ class NoResetSimpleRecurrent(SimpleRecurrent):
         if mask:
             next_states = (mask[:, None] * next_states +
                            (1 - mask[:, None]) * states)
-            logger.info('>>> NEXT STATES >>>'+str(next_states))
+        logger.info('>>> NEXT STATES >>>'+type(next_states))
         return next_states
 
     @application(outputs=apply.states)
     def initial_states(self, batch_size, *args, **kwargs):
+        logger.info('TYPE OF INITIAL_STATES RETURN VAL: '+type(tensor.repeat(shared(array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], dtype='float32'))[None, :], batch_size, 0)))
         return tensor.repeat(shared(array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], dtype='float32'))[None, :], batch_size, 0)  # for testing I now only return a vector with a very characteristic sequence of floats NOTE: WORKED!!!
 
 
