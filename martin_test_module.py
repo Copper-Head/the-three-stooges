@@ -1,5 +1,6 @@
 from blocks.algorithms import StepRule
-from blocks.bricks.recurrent import SimpleRecurrent, application, lazy, recurrent
+from blocks.bricks.recurrent import SimpleRecurrent, recurrent
+from blocks.bricks.base import application, lazy
 from theano import tensor, shared
 from collections import OrderedDict
 from numpy import array
