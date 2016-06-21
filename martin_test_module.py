@@ -182,16 +182,17 @@ def no_reset_recurrent(*args, **kwargs):
                         kwargs[state_name] = (
                             kwargs[state_name](state_name, batch_size,
                                                *args, **kwargs))
-                # I suspect the following lines to be responsible for the reset of the states, so I exclude them
-                """
+                # I suspect the following lines to be responsible for the reset of the states, so all I have to do – at
+                # least from what I think – is to set the state to its own value instead of to the init-state's value
                 else:
                     try:
-                        kwargs[state_name] = initial_states[state_name]
+                        # kwargs[state_name] = initial_states[state_name]  # OLD
+                        kwargs[state_name] = array([1, 2, 3, 4, 5, 5, 4, 3, 2, 1], dtype='float32')# NEW
+                        logger.info('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> DID IT WORK?')
                     except KeyError:
                         raise KeyError(
                             "no initial state for '{}' of the brick {}".format(
                                 state_name, brick.name))
-                """
             states_given = dict_subset(kwargs, application.states)
 
             # Theano issue 1772
