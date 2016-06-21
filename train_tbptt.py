@@ -120,6 +120,7 @@ main_loop = MainLoop(algorithm=algorithm, data_stream=data_stream, model=cost_mo
 updates = main_loop.algorithm.updates
 init_state_update = list(filter(lambda u: u[0] == init_state_2, updates))[0]
 updates.remove(init_state_update)
+print('REMOVED UPDATE:', init_state_update)
 print('\nUPDATES:', main_loop.algorithm.updates,'\n')
 
 main_loop.run()
