@@ -304,7 +304,7 @@ class NoResetSimpleRecurrent(SimpleRecurrent):
         :return:
         """
         self._state = state
-        logging.info(self.name+' received and registered state: '+self._state.name)
+        logger.info(self.name+' received and registered state: '+self._state.name)
 
     @recurrent(sequences=['inputs', 'mask'], states=['states'],
                outputs=['states'], contexts=[])
