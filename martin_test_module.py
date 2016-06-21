@@ -64,7 +64,7 @@ class NoResetSimpleRecurrent(SimpleRecurrent):
         self.dim = dim
         children = [activation]
         kwargs.setdefault('children', []).extend(children)
-        super(NoResetSimpleRecurrent, self).__init__(**kwargs)
+        super(NoResetSimpleRecurrent, self).__init__(dim, activation, **kwargs)
 
     @recurrent(sequences=['inputs', 'mask'], states=['states'],
                outputs=['states'], contexts=[])
