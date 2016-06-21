@@ -117,6 +117,8 @@ main_loop = MainLoop(algorithm=algorithm, data_stream=data_stream, model=cost_mo
                      extensions=[monitor_grad, FinishAfter(after_n_epochs=args.epochs), ProgressBar(),
                                  Timing(), Printing()])
 
+print('UPDATES:', main_loop.algorithm.updates)
+
 # remove update
 # updates = main_loop.algorithm.updates
 # init_state_update = list(filter(lambda u: u[0] == init_state_2, updates))[0]
