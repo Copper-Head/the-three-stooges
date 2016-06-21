@@ -178,9 +178,15 @@ def no_reset_recurrent(*args, **kwargs):
                 dim = brick.get_dim(state_name)
                 if state_name in kwargs:
                     if isinstance(kwargs[state_name], NdarrayInitialization):
+                        """
                         kwargs[state_name] = tensor.alloc(
                             kwargs[state_name].generate(brick.rng, (1, dim)),
                             batch_size, dim)
+                        """
+                        try:
+                            kwargs[state_name] = most_recent_state_values[state_name]
+                        except KeyError:
+                            raise KeyError("no most recent value for {} of brick {}".format(state_name, brick.name))
                     elif isinstance(kwargs[state_name], Application):
                         kwargs[state_name] = (
                             kwargs[state_name](state_name, batch_size,
