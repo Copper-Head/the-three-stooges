@@ -187,7 +187,7 @@ def no_reset_recurrent(*args, **kwargs):
                 else:
                     try:
                         # kwargs[state_name] = initial_states[state_name]  # OLD
-                        logger.info(initial_states[state_name])
+                        logger.info(type(initial_states[state_name]))
                         logger.info(tensor.repeat(shared(array([0, 10, 0, 10, 0, 0, 10, 0, 10, 0], dtype='float32'))[None, :], batch_size, 0)[state_name])  # NEW
                         logger.info('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> DID IT WORK?')
                     except KeyError:
