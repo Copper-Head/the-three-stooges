@@ -1,5 +1,4 @@
 from blocks.algorithms import StepRule
-from blocks.monitoring.evaluators import AggregationBuffer
 
 from collections import OrderedDict
 
@@ -34,7 +33,7 @@ class OverrideStateReset(StepRule):
             A list of tuples representing updates to be performed.
 
         """
-        init_states = [(param, self._dict[param][0][-1] if param in self._dict else param) for param, value in previous_steps.items()]
+        init_states = [(param, self._dict[param] if param in self._dict else param) for param, value in previous_steps.items()]
         print('>>>>>>>>>>>>>>>>>>>>> DEBUG >>>>>>>>>>>>>>>>>>>>>>', init_states)
         return_dict = self._dict.copy()
         for param, value in previous_steps.items():

@@ -83,7 +83,7 @@ state_to_compare = list(filter(lambda x: x.name == 'sequencegenerator_cost_matri
 # If you don't know what gradient clipping is: Define threshold T; if the length of the gradient is > T, scale it such
 # that its length is equal to T. This serves to make exploding gradients less severe.
 algorithm = GradientDescent(cost=cross_ent, parameters=cost_model.parameters,
-                            step_rule=CompositeRule(components=[StepClipping(threshold=args.clipping), Adam(), OverrideStateReset(OrderedDict({init_state_2 : state_to_compare}))]),
+                            step_rule=CompositeRule(components=[StepClipping(threshold=args.clipping), Adam(), OverrideStateReset(OrderedDict({init_state_2 : state_to_compare[0][-1]}))]),
                             on_unused_sources="ignore")
 
 
