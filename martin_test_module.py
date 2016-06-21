@@ -98,6 +98,9 @@ def no_reset_recurrent(*args, **kwargs):
     :doc:`The tutorial on RNNs </rnn>`
 
     """
+
+    test_argument = kwargs.pop('test_arg')
+
     def recurrent_wrapper(application_function):
         arg_spec = inspect.getargspec(application_function)
         arg_names = arg_spec.args[1:]
@@ -187,7 +190,7 @@ def no_reset_recurrent(*args, **kwargs):
                 else:
                     try:
                         # kwargs[state_name] = initial_states[state_name]  # OLD
-                        logger.info(kwargs.pop('test_argument'))
+                        logger.info(test_argument)
                         logger.info(type(initial_states[state_name]))
                         logger.info(tensor.repeat(shared(array([0, 10, 0, 10, 0, 0, 10, 0, 10, 0], dtype='float32'))[None, :], batch_size, 0)[state_name])  # NEW
                         logger.info('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> DID IT WORK?')
@@ -279,7 +282,7 @@ class NoResetSimpleRecurrent(SimpleRecurrent):
         super(NoResetSimpleRecurrent, self).__init__(dim, activation, **kwargs)
 
     @no_reset_recurrent(sequences=['inputs', 'mask'], states=['states'],
-               outputs=['states'], contexts=[])
+               outputs=['states'], contexts=[], test_arg='HERE')
     def apply(self, inputs, states, mask=None):
         """Apply the simple transition.
         Parameters
