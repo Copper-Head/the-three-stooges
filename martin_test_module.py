@@ -98,6 +98,9 @@ def no_reset_recurrent(*args, **kwargs):
     :doc:`The tutorial on RNNs </rnn>`
 
     """
+
+    most_recent_state_values = {}
+
     def recurrent_wrapper(application_function):
         arg_spec = inspect.getargspec(application_function)
         arg_names = arg_spec.args[1:]
@@ -182,14 +185,17 @@ def no_reset_recurrent(*args, **kwargs):
                         kwargs[state_name] = (
                             kwargs[state_name](state_name, batch_size,
                                                *args, **kwargs))
+                        most_recent_state_values[state_name] = kwargs[state_name]
                 # I suspect the following lines to be responsible for the reset of the states, so all I have to do -- at
                 # least from what I think -- is to set the state to its own value instead of to the init-state's value
                 else:
                     try:
                         # kwargs[state_name] = initial_states[state_name]  # OLD
-                        logger.info(kwargs[state_name], type(kwargs[state_name]))
-                        logger.info(type(initial_states[state_name]))
-                        logger.info(tensor.repeat(shared(array([0, 10, 0, 10, 0, 0, 10, 0, 10, 0], dtype='float32'))[None, :], batch_size, 0)[state_name])  # NEW
+                        # kwargs[state_name] = point on value of tensor variable, problem: HOW TO GET THEM IN HERE?
+                        if state_name in most_recent_state_values:
+                            kwargs[state_name] = most_recent_state_values[kwargs]
+                        else:
+                            kwargs[state_name] = initial_states[state_name]  # necessary for first initialization (?)
                         logger.info('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> DID IT WORK?')
                     except KeyError:
                         raise KeyError(
