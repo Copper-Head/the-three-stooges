@@ -49,7 +49,7 @@ cost_model = network.cost_model
 
 # do init_state stuff
 initial_states = network.initial_states
-init_state_2 = initial_states[2]
+#init_state_2 = initial_states[2]
 
 # data
 train_data = H5PYDataset(DATA_FILE_LOC, which_sets=("train",), load_in_memory=True)
