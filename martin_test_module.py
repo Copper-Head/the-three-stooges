@@ -356,7 +356,7 @@ class NoResetSimpleRecurrent(SimpleRecurrent):
     def initial_states(self, batch_size, *args, **kwargs):
         logger.info('INITIAL_STATES CALLED, brick='+str(self.name))
         # return tensor.repeat(self._state[0][-1][None, :], batch_size, 0)  # this does not work, since this method is called BEFORE state is registered
-        return tensor.repeat(shared(array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], dtype='float32'))[None, :], batch_size, 0)  # for testing I now only return a vector with a very characteristic sequence of floats NOTE: WORKED!!!
-
+        # return tensor.repeat(shared(array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], dtype='float32'))[None, :], batch_size, 0)  # for testing I now only return a vector with a very characteristic sequence of floats NOTE: WORKED!!!
+        return
 
     ## TODO: possible options: 1) return states as they are and not initial states in initial_states() OR 2) have a look at recurrent-definition in BaseRecurrent
