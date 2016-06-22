@@ -113,20 +113,19 @@ init_state_modifier = SharedVariableModifier(network.transitions[-1].initial_sta
 
 monitor_grad = TrainingDataMonitoring(variables=[cross_ent, aggregation.mean(algorithm.total_gradient_norm),
                                                  aggregation.mean(algorithm.total_step_norm)]+initial_states+[state_to_compare],
-                                      prefix="training", after_n_batches=1)
+                                      prefix="training")
 
 early_stopping = EarlyStopping(variables=[cross_ent], data_stream=data_stream_valid,
                                path="seqgen_" + args.type + "_" + "_".join([str(d) for d in network.hidden_dims]) + ".pkl",
                                tolerance=4, prefix="validation")
-
-monitor_grad._conditions.remove(monitor_grad._conditions[-1])  # dirty but necessary for testing
-print(monitor_grad._conditions)
 
 main_loop = MainLoop(algorithm=algorithm, data_stream=data_stream, model=cost_model,
                      extensions=[monitor_grad, FinishAfter(after_n_epochs=args.epochs), ProgressBar(),
                                  Timing(), Printing(), init_state_modifier])
 
 main_loop.algorithm.add_updates(aggr.accumulation_updates)
+
+monitor_grad.set_conditions(after_batch=True, just_aggregate=False)
 
 # remove update
 # updates = main_loop.algorithm.updates
