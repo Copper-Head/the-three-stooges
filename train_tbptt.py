@@ -13,7 +13,7 @@ from blocks.monitoring.evaluators import AggregationBuffer
 from fuel.datasets.hdf5 import H5PYDataset
 from fuel.schemes import SequentialScheme, ShuffledScheme
 from fuel.streams import DataStream
-from numpy import load, array, ones, all
+from numpy import load, array, ones, all, zeros
 from theano import function, shared
 
 from custom_blocks import PadAndAddMasks, EarlyStopping
@@ -90,7 +90,7 @@ algorithm = GradientDescent(cost=cross_ent, parameters=cost_model.parameters,
 
 aggr = AggregationBuffer(variables=[state_to_compare], use_take_last=True)
 aggr.initialize_aggregators()
-check_value = None
+check_value = shared(zeros((1, network.transitions[-1].dim)))
 
 def modifier_function(iterations_done, old_value):
     """
@@ -106,10 +106,9 @@ def modifier_function(iterations_done, old_value):
     print('NEW in: ', new_value[-1][0], new_value[0][0], sep='\n')
     value_a = new_value[-1][0]
     value_b = new_value[0][0]
-    if iterations_done == 1:
-        check_value = old_value
+    if all(check_value.get_value() == zeros((1, old_value.dim), dtype='float32')):
+        check_value.set_value(old_value)
     new_value = value_a if all(value_a != check_value) else value_b
-    check_value = new_value
     return new_value
 
 
