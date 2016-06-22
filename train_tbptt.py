@@ -104,7 +104,9 @@ def modifier_function(iterations_done, old_value):
     #new_value = ones(10, dtype='float32')
     print('OLD ..:', old_value)
     print('NEW in: ', new_value[-1][0], new_value[0][0], sep='\n')
-    return new_value[-1][0]
+    value_a = new_value[-1][0]
+    value_b = new_value[0][0]
+    return value_a if value_a != old_value else value_b if value_b != old_value else ones(10, dtype='float32')
 
 init_state_modifier = SharedVariableModifier(network.transitions[-1].initial_state_, function=modifier_function, after_batch=True)
 
