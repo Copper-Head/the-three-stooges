@@ -270,10 +270,12 @@ def no_reset_recurrent(*args, **kwargs):
                                                       updates)
 
             logger.info('\n')
-            logger.info('APPLICATION_CALL: '+str(dir(application_call)))
-            logger.info('.... application: '+str(dir(application_call.application)))
-            logger.info('.... brick check: '+str(application_call.application.brick.name == brick.name))
+            #logger.info('APPLICATION_CALL: '+str(dir(application_call)))
+            #logger.info('.... application: '+str(dir(application_call.application)))
+            #logger.info('.... brick check: '+str(application_call.application.brick.name == brick.name))  # TRUE
             logger.info('.........  brick: '+str(dir(brick)))
+            logger.info('. brick.aux_vars: '+str(brick.auxiliary_variables))
+            logger.info('... brick.params: '+str(brick.parameters))
             logger.info('\n')
 
             return result
