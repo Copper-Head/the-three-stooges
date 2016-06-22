@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 from blocks.algorithms import StepRule
 from blocks.bricks.recurrent import SimpleRecurrent, recurrent
 from blocks.bricks.base import Application, application, lazy
@@ -363,11 +365,14 @@ class NoResetSimpleRecurrent(SimpleRecurrent):
 
     @application(outputs=apply.outputs)
     def initial_states(self, batch_size, *args, **kwargs):
+        print('args:',*args)
+        logger.info('INITIAL_STATES KWARGS: '+ str(kwargs))
         logger.info('INITIAL_STATES CALLED, brick='+str(self.name))
         # return tensor.repeat(self._state[0][-1][None, :], batch_size, 0)  # this does not work, since this method is called BEFORE state is registered
         # return tensor.repeat(shared(array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], dtype='float32'))[None, :], batch_size, 0)  # for testing I now only return a vector with a very characteristic sequence of floats NOTE: WORKED!!!
         result = []
         for state in self.apply.states:
+
             logger.info('LOOPING OVER APPLY.STATES: '+str(state))
             dim = self.get_dim(state)
             if dim == 0:
