@@ -312,7 +312,7 @@ class NoResetSimpleRecurrent(SimpleRecurrent):
         self._state = state
         logger.info(self.name+' received and registered state: '+self._state.name)
 
-    @recurrent(sequences=['inputs', 'mask'], states=['states'],
+    @no_reset_recurrent(sequences=['inputs', 'mask'], states=['states'],
                outputs=['states'], contexts=[])
     def apply(self, inputs, states, mask=None):
         """Apply the simple transition.
