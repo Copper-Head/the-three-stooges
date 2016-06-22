@@ -109,6 +109,7 @@ def modifier_function(iterations_done, old_value):
     if all(check_value.get_value() == zeros((1, old_value.size), dtype='float32')):
         check_value.set_value(old_value)
     new_value = value_a if all(value_a != check_value) else value_b
+    check_value.set_value(new_value)
     return new_value
 
 
