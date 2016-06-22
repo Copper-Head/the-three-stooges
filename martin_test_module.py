@@ -2,7 +2,8 @@ from blocks.algorithms import StepRule
 from blocks.bricks.recurrent import SimpleRecurrent, recurrent
 from blocks.bricks.base import Application, application, lazy
 from blocks.initialization import NdarrayInitialization
-from blocks.utils import pack, dict_union, dict_subset, is_shared_variable
+from blocks.roles import add_role, INITIAL_STATE, WEIGHT
+from blocks.utils import pack, dict_union, dict_subset, is_shared_variable, shared_floatx_nans, shared_floatx_zeros
 from theano import tensor, shared, Variable
 import theano
 from collections import OrderedDict
@@ -328,6 +329,16 @@ class NoResetSimpleRecurrent(SimpleRecurrent):
         """
         self._state = state
         logger.info(self.name+' received and registered state: '+self._state.name)
+
+
+    def _allocate(self):
+        self.parameters.append(shared_floatx_nans((self.dim, self.dim),
+                                                  name="W"))
+        add_role(self.parameters[0], WEIGHT)
+        # self.parameters.append(shared_floatx_zeros((self.dim,),
+          #                                         name="initial_state"))
+        # add_role(self.parameters[1], INITIAL_STATE)
+
 
     @no_reset_recurrent(sequences=['inputs', 'mask'], states=['states'],
                outputs=['states'], contexts=[])
