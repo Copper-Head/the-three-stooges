@@ -90,7 +90,7 @@ algorithm = GradientDescent(cost=cross_ent, parameters=cost_model.parameters,
 
 aggr = AggregationBuffer(variables=[state_to_compare], use_take_last=True)
 aggr.initialize_aggregators()
-check_value = shared(zeros((1, network.transitions[-1].dim)))
+check_value = shared(zeros((network.transitions[-1].dim)))
 
 def modifier_function(iterations_done, old_value):
     """
