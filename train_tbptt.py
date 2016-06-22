@@ -113,7 +113,7 @@ init_state_modifier = SharedVariableModifier(network.transitions[-1].initial_sta
 
 monitor_grad = TrainingDataMonitoring(variables=[cross_ent, aggregation.mean(algorithm.total_gradient_norm),
                                                  aggregation.mean(algorithm.total_step_norm)]+initial_states+[state_to_compare],
-                                      prefix="training", after_n_batches=1)
+                                      prefix="training", after_batch=True)
 
 print('conditions:', *monitor_grad._conditions)
 
@@ -123,7 +123,7 @@ early_stopping = EarlyStopping(variables=[cross_ent], data_stream=data_stream_va
 
 main_loop = MainLoop(algorithm=algorithm, data_stream=data_stream, model=cost_model,
                      extensions=[monitor_grad, FinishAfter(after_n_epochs=args.epochs), ProgressBar(),
-                                 Timing(), Printing(), init_state_modifier])
+                                 Timing(), Printing(after_batch=True), init_state_modifier])
 
 main_loop.algorithm.add_updates(aggr.accumulation_updates)
 
