@@ -108,7 +108,7 @@ def modifier_function(iterations_done, old_value):
     value_b = new_value[0][0]
     return value_a if all(value_a != old_value) else value_b
 
-init_state_modifier = SharedVariableModifier(network.transitions[-1].initial_state_, function=modifier_function, after_batch=True)
+init_state_modifier = SharedVariableModifier(network.transitions[-1].initial_state_, function=modifier_function)
 
 
 #state_function = function([state_to_compare], initial_states[2], updates=[(init_state_2, state_to_compare[0][-1])]) #TODO look at this, this is how it basically works!
