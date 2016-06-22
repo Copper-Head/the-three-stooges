@@ -204,7 +204,7 @@ def no_reset_recurrent(*args, **kwargs):
                 # I suspect the following lines to be responsible for the reset of the states, so all I have to do -- at
                 # least from what I think -- is to set the state to its own value instead of to the init-state's value
                 else:
-                    logger.info('Case else, reset procedure')
+                    logger.info('Case else, reset (?) procedure, state: '+kwargs['states'])
                     try:
                         # kwargs[state_name] = initial_states[state_name]  # OLD
                         # kwargs[state_name] = point on value of tensor variable, problem: HOW TO GET THEM IN HERE?
