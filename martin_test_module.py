@@ -124,7 +124,6 @@ def no_reset_recurrent(*args, **kwargs):
                 state tensors. ``False`` by default.
 
             """
-            raise ValueError('JUST WANTED TO RAISE AN ERROR TO SEE SOURCE OF CALL')
             logger.info('>>>>>>>>>>>>>>> recurrent_apply called')
             logger.info('RECURRENT APPLY ARGS: '+str(args))
             logger.info('RECURRENT APPLY KWARGS: '+str(kwargs))
