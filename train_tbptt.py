@@ -103,7 +103,8 @@ def modifier_function(iterations_done, old_value):
     new_value = values[state_to_compare.name]
     aggr.initialize_aggregators()  # TODO what's the purpose of that? I observed them do it in the monitoring extensions after every request
     print('OLD ..:', old_value)
-    print('NEW in: ', new_value[-1][0], new_value[0][0], sep='\n')
+    print('NEW in:', new_value[-1][0], new_value[0][0], sep='\n')
+    print('CHECK:', check_value.get_value(), sep='\n')
     value_a = new_value[-1][0]
     value_b = new_value[0][0]
     if all(check_value.get_value() == zeros((1, old_value.size), dtype='float32')):
