@@ -311,7 +311,7 @@ class NoResetSimpleRecurrent(SimpleRecurrent):
         self._state = state
         logger.info(self.name+' received and registered state: '+self._state.name)
 
-    @no_reset_recurrent(sequences=['inputs', 'mask'], states=['states'],
+    @recurrent(sequences=['inputs', 'mask'], states=['states'],
                outputs=['states'], contexts=[])
     def apply(self, inputs, states, mask=None):
         """Apply the simple transition.
@@ -328,7 +328,7 @@ class NoResetSimpleRecurrent(SimpleRecurrent):
         """
         logger.info('APPLY CALLED, value of states: '+str(states)+', brick='+str(self.name))
         next_states = inputs + tensor.dot(states, self.W)
-        next_states = self.children[0].apply(next_states)
+        next_states = self.children[0].apply(next_states, truncate_gradient=True)
         if mask:
             next_states = (mask[:, None] * next_states +
                            (1 - mask[:, None]) * states)
