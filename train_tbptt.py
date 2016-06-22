@@ -113,9 +113,7 @@ init_state_modifier = SharedVariableModifier(network.transitions[-1].initial_sta
 
 monitor_grad = TrainingDataMonitoring(variables=[cross_ent, aggregation.mean(algorithm.total_gradient_norm),
                                                  aggregation.mean(algorithm.total_step_norm)]+initial_states+[state_to_compare],
-                                      prefix="training")
-
-monitor_grad.set_conditions(before_training=True, after_batch=True, just_aggregate=False)
+                                      prefix="training", after_batch=True, just_aggregate=False)
 
 print('conditions:', *monitor_grad._conditions)
 
