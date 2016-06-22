@@ -66,46 +66,6 @@ class OverrideStateReset(StepRule):
 
 
 class ZeroInitLSTM(BaseRecurrent, Initializable):
-
-    u"""Long Short Term Memory.
-
-    Every unit of an LSTM is equipped with input, forget and output gates.
-    This implementation is based on code by Mohammad Pezeshki that
-    implements the architecture used in [GSS03]_ and [Grav13]_. It aims to
-    do as many computations in parallel as possible and expects the last
-    dimension of the input to be four times the output dimension.
-
-    Unlike a vanilla LSTM as described in [HS97]_, this model has peephole
-    connections from the cells to the gates. The output gates receive
-    information about the cells at the current time step, while the other
-    gates only receive information about the cells at the previous time
-    step. All 'peephole' weight matrices are diagonal.
-
-    .. [GSS03] Gers, Felix A., Nicol N. Schraudolph, and Jürgen
-        Schmidhuber, *Learning precise timing with LSTM recurrent
-        networks*, Journal of Machine Learning Research 3 (2003),
-        pp. 115-143.
-    .. [Grav13] Graves, Alex, *Generating sequences with recurrent neural
-        networks*, arXiv preprint arXiv:1308.0850 (2013).
-    .. [HS97] Sepp Hochreiter, and Jürgen Schmidhuber, *Long Short-Term
-        Memory*, Neural Computation 9(8) (1997), pp. 1735-1780.
-
-    Parameters
-    ----------
-    dim : int
-        The dimension of the hidden state.
-    activation : :class:`.Brick`, optional
-        The activation function. The default and by far the most popular
-        is :class:`.Tanh`.
-    gate_activation : :class:`.Brick` or None
-        The brick to apply as activation for gates (input/output/forget).
-        If ``None`` a :class:`.Logistic` brick is used.
-
-    Notes
-    -----
-    See :class:`.Initializable` for initialization parameters.
-
-    """
     @lazy(allocation=['dim'])
     def __init__(self, dim, activation=None, gate_activation=None, **kwargs):
         self.dim = dim
@@ -163,39 +123,6 @@ class ZeroInitLSTM(BaseRecurrent, Initializable):
     @recurrent(sequences=['inputs', 'mask'], states=['states', 'cells'],
                contexts=[], outputs=['states', 'cells'])
     def apply(self, inputs, states, cells, mask=None):
-        """Apply the Long Short Term Memory transition.
-
-        Parameters
-        ----------
-        states : :class:`~tensor.TensorVariable`
-            The 2 dimensional matrix of current states in the shape
-            (batch_size, features). Required for `one_step` usage.
-        cells : :class:`~tensor.TensorVariable`
-            The 2 dimensional matrix of current cells in the shape
-            (batch_size, features). Required for `one_step` usage.
-        inputs : :class:`~tensor.TensorVariable`
-            The 2 dimensional matrix of inputs in the shape (batch_size,
-            features * 4). The `inputs` needs to be four times the
-            dimension of the LSTM brick to insure each four gates receive
-            different transformations of the input. See [Grav13]_
-            equations 7 to 10 for more details. The `inputs` are then split
-            in this order: Input gates, forget gates, cells and output
-            gates.
-        mask : :class:`~tensor.TensorVariable`
-            A 1D binary array in the shape (batch,) which is 1 if there is
-            data available, 0 if not. Assumed to be 1-s only if not given.
-
-        .. [Grav13] Graves, Alex, *Generating sequences with recurrent
-            neural networks*, arXiv preprint arXiv:1308.0850 (2013).
-
-        Returns
-        -------
-        states : :class:`~tensor.TensorVariable`
-            Next states of the network.
-        cells : :class:`~tensor.TensorVariable`
-            Next cell activations of the network.
-
-        """
         def slice_last(x, no):
             return x[:, no*self.dim: (no+1)*self.dim]
 
