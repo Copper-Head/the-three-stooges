@@ -269,9 +269,8 @@ def no_reset_recurrent(*args, **kwargs):
                 application_call.updates = dict_union(application_call.updates,
                                                       updates)
 
-            logger.info('APPLICATION_CALL: '+str(application_call))
-            logger.info('.... application: '+str(application_call.application))
-            logger.info('.... annotations: '+str(application_call.annotations))
+            logger.info('APPLICATION_CALL: '+str(dir(application_call)))
+            logger.info('.... application: '+str(dir(application_call.application)))
 
             return result
 
