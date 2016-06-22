@@ -246,7 +246,7 @@ def no_reset_recurrent(*args, **kwargs):
                 outputs_info=outputs_info,
                 non_sequences=list(contexts_given.values()),
                 n_steps=n_steps,
-                #truncate_gradient=10,  # TODO check
+                #truncate_gradient=10,  # TODO check, maybe we can still just stick one long sequence 
                 go_backwards=reverse,
                 name='{}_{}_scan'.format(
                     brick.name, application.application_name),
@@ -254,12 +254,13 @@ def no_reset_recurrent(*args, **kwargs):
             logger.info('THEANO_SCAN_UPDATES: '+str(updates.items()))  # TODO: Remove print, but keep it for now: It shows, that scan is not responsible for the state reset
             result = pack(result)
             if return_initial_states:
-                logger.warn('return_initial_states turned true.')
+                logger.warn('return_initial_states turned true. Result before: '+str(result))
                 # Undo Subtensor
                 for i in range(len(states_given)):
                     assert isinstance(result[i].owner.op,
                                       tensor.subtensor.Subtensor)
                     result[i] = result[i].owner.inputs[0]
+                logger.warn('...result after: '+str(result))
             if updates:
                 application_call.updates = dict_union(application_call.updates,
                                                       updates)
