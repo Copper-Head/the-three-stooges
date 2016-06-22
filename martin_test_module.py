@@ -370,6 +370,7 @@ class NoResetSimpleRecurrent(SimpleRecurrent):
         print('aux_vars: ', *self.auxiliary_variables)
         print('children: ', *self.children)
         print('bound appls: ', str(self._bound_applications))
+        print('updates: ', str(self.updates))
         logger.info('INITIAL_STATES KWARGS: '+ str(kwargs))
         logger.info('INITIAL_STATES CALLED, brick='+str(self.name))
         # return tensor.repeat(self._state[0][-1][None, :], batch_size, 0)  # this does not work, since this method is called BEFORE state is registered
