@@ -269,8 +269,12 @@ def no_reset_recurrent(*args, **kwargs):
                 application_call.updates = dict_union(application_call.updates,
                                                       updates)
 
+            logger.info('\n')
             logger.info('APPLICATION_CALL: '+str(dir(application_call)))
             logger.info('.... application: '+str(dir(application_call.application)))
+            logger.info('.... brick check: '+str(application_call.application.brick.name == brick.name))
+            logger.info('.........  brick: '+str(dir(brick)))
+            logger.info('\n')
 
             return result
 
