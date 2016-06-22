@@ -79,7 +79,7 @@ class ZeroInitLSTM(BaseRecurrent, Initializable):
 
         children = ([self.activation, self.gate_activation] +
                     kwargs.get('children', []))
-        super(LSTM, self).__init__(children=children, **kwargs)
+        super(ZeroInitLSTM, self).__init__(children=children, **kwargs)
 
     def get_dim(self, name):
         if name == 'inputs':
@@ -88,7 +88,7 @@ class ZeroInitLSTM(BaseRecurrent, Initializable):
             return self.dim
         if name == 'mask':
             return 0
-        return super(LSTM, self).get_dim(name)
+        return super(ZeroInitLSTM, self).get_dim(name)
 
     def _allocate(self):
         self.W_state = shared_floatx_nans((self.dim, 4*self.dim),
