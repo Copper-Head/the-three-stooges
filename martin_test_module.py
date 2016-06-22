@@ -123,6 +123,7 @@ def no_reset_recurrent(*args, **kwargs):
                 state tensors. ``False`` by default.
 
             """
+            raise ValueError('JUST WANTED TO RAISE AN ERROR TO SEE SOURCE OF CALL')
             logger.info('>>>>>>>>>>>>>>> recurrent_apply called')
             logger.info('RECURRENT APPLY ARGS: '+str(args))
             logger.info('RECURRENT APPLY KWARGS: '+str(kwargs))
@@ -221,13 +222,11 @@ def no_reset_recurrent(*args, **kwargs):
             states_given = dict_subset(kwargs, application.states)
 
             # Theano issue 1772 (FROM WHAT I GOT THIS IS NONE OF OUR BUSINESS)
-            """
             for name, state in states_given.items():
                 states_given[name] = tensor.unbroadcast(state,
                                                         *range(state.ndim))
 
-            logger.info('STATES_GIVEN: '+str(states_given.items())+ ' ('+brick.name+')')
-            """
+            #logger.info('STATES_GIVEN: '+str(states_given.items())+ ' ('+brick.name+')')
             def scan_function(*args):
                 args = list(args)
                 arg_names = (list(sequences_given) +
@@ -270,15 +269,15 @@ def no_reset_recurrent(*args, **kwargs):
                 application_call.updates = dict_union(application_call.updates,
                                                       updates)
 
-            logger.info('\n')
+            #logger.info('\n')
             #logger.info('APPLICATION_CALL: '+str(dir(application_call)))
             #logger.info('.... application: '+str(dir(application_call.application)))
             #logger.info('.... brick check: '+str(application_call.application.brick.name == brick.name))  # TRUE
-            logger.info('.... appl.states: '+str(application.states))
-            logger.info('.........  brick: '+str(dir(brick)))
-            logger.info('. brick.aux_vars: '+str(brick.auxiliary_variables))
-            logger.info('... brick.params: '+str(brick.parameters))
-            logger.info('\n')
+            #logger.info('.... appl.states: '+str(application.states))
+            #logger.info('.........  brick: '+str(dir(brick)))
+            #logger.info('. brick.aux_vars: '+str(brick.auxiliary_variables))
+            #logger.info('... brick.params: '+str(brick.parameters))
+            #logger.info('\n')
 
             return result
 
@@ -357,7 +356,7 @@ class NoResetSimpleRecurrent(SimpleRecurrent):
     def initial_states(self, batch_size, *args, **kwargs):
         logger.info('INITIAL_STATES CALLED, brick='+str(self.name))
         # return tensor.repeat(self._state[0][-1][None, :], batch_size, 0)  # this does not work, since this method is called BEFORE state is registered
-        # return tensor.repeat(shared(array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], dtype='float32'))[None, :], batch_size, 0)  # for testing I now only return a vector with a very characteristic sequence of floats NOTE: WORKED!!!
-        return
+        return tensor.repeat(shared(array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], dtype='float32'))[None, :], batch_size, 0)  # for testing I now only return a vector with a very characteristic sequence of floats NOTE: WORKED!!!
+
 
     ## TODO: possible options: 1) return states as they are and not initial states in initial_states() OR 2) have a look at recurrent-definition in BaseRecurrent
