@@ -70,5 +70,5 @@ class ZeroInitLSTM(LSTM):
 
     @application
     def initial_states(self, batch_size, *args, **kwargs):
-        return [tensor.repeat(tensor.zeros(batch_size, self.dim)),
-                tensor.repeat(tensor.zeros(batch_size, self.dim))]
+        return [tensor.zeros((batch_size, self.dim)),
+                tensor.zeros((batch_size, self.dim))]
