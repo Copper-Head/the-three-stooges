@@ -111,6 +111,7 @@ def modifier_function(iterations_done, old_value):
         check_value.set_value(old_value)
     new_value = value_a if all(value_a != check_value) else value_b
     check_value.set_value(new_value)
+    print('CHOICE:', new_value, sep='\n')
     return new_value
 
 
