@@ -220,13 +220,14 @@ def no_reset_recurrent(*args, **kwargs):
                                 state_name, brick.name))
             states_given = dict_subset(kwargs, application.states)
 
-            # Theano issue 1772
+            # Theano issue 1772 (FROM WHAT I GOT THIS IS NONE OF OUR BUSINESS)
+            """
             for name, state in states_given.items():
                 states_given[name] = tensor.unbroadcast(state,
                                                         *range(state.ndim))
 
             logger.info('STATES_GIVEN: '+str(states_given.items())+ ' ('+brick.name+')')
-
+            """
             def scan_function(*args):
                 args = list(args)
                 arg_names = (list(sequences_given) +
