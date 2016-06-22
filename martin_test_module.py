@@ -269,6 +269,8 @@ def no_reset_recurrent(*args, **kwargs):
                 application_call.updates = dict_union(application_call.updates,
                                                       updates)
 
+            logger.info('APPLICATION_CALL: '+str(application_call))
+
             return result
 
         logger.info('RETURNING recurrent_apply='+str(recurrent_apply))
