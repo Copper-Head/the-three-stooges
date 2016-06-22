@@ -113,9 +113,13 @@ early_stopping = EarlyStopping(variables=[cross_ent], data_stream=data_stream_va
                                path="seqgen_" + args.type + "_" + "_".join([str(d) for d in network.hidden_dims]) + ".pkl",
                                tolerance=4, prefix="validation")
 
+
+
 main_loop = MainLoop(algorithm=algorithm, data_stream=data_stream, model=cost_model,
                      extensions=[monitor_grad, FinishAfter(after_n_epochs=args.epochs), ProgressBar(),
                                  Timing(), Printing(), init_state_modifier])
+
+main_loop.algorithm.add_updates(aggr.accumulation_updates)
 
 # remove update
 # updates = main_loop.algorithm.updates
