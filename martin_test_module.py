@@ -270,6 +270,8 @@ def no_reset_recurrent(*args, **kwargs):
                                                       updates)
 
             logger.info('APPLICATION_CALL: '+str(application_call))
+            logger.info('.... application: '+str(application_call.application))
+            logger.info('.... annotations: '+str(application_call.annotations))
 
             return result
 
