@@ -90,6 +90,7 @@ algorithm = GradientDescent(cost=cross_ent, parameters=cost_model.parameters,
 
 aggr = AggregationBuffer(variables=[state_to_compare], use_take_last=True)
 aggr.initialize_aggregators()
+check_value = None
 
 def modifier_function(iterations_done, old_value):
     """
@@ -101,12 +102,16 @@ def modifier_function(iterations_done, old_value):
     values = aggr.get_aggregated_values()
     new_value = values[state_to_compare.name]
     aggr.initialize_aggregators()  # TODO what's the purpose of that? I observed them do it in the monitoring extensions after every request
-    #new_value = ones(10, dtype='float32')
     print('OLD ..:', old_value)
     print('NEW in: ', new_value[-1][0], new_value[0][0], sep='\n')
     value_a = new_value[-1][0]
     value_b = new_value[0][0]
-    return value_a if all(value_a != old_value) else value_b
+    if iterations_done == 1:
+        check_value = old_value
+    new_value = value_a if all(value_a != check_value) else value_b
+    check_value = new_value
+    return new_value
+
 
 init_state_modifier = SharedVariableModifier(network.transitions[-1].initial_state_, function=modifier_function, after_batch=True)
 
