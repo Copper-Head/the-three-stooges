@@ -7,8 +7,6 @@ from blocks.model import Model
 from blocks.serialization import load_parameters
 from theano import tensor
 
-from martin_test_module import NoResetSimpleRecurrent
-
 class NetworkType(object):
     """
     This enum represents the three types of networks we're looking at.
@@ -20,7 +18,7 @@ class NetworkType(object):
     @staticmethod
     def get_brick(network_type, reset_states=True):
         if network_type == NetworkType.SIMPLE_RNN:
-            return SimpleRecurrent if reset_states else NoResetSimpleRecurrent
+            return SimpleRecurrent
         elif network_type == NetworkType.LSTM:
             return LSTM
         elif network_type == NetworkType.GRU:
