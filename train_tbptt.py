@@ -96,8 +96,8 @@ def modifier_function(iterations_done, old_value):
     new_value = values[state_to_compare.name]
     aggr.initialize_aggregators()  # TODO what's the purpose of that? I observed them do it in the monitoring extensions after every request
     #new_value = ones(10, dtype='float32')
-    #print(old_value)
-    #print(new_value[0])
+    print('OLD ..:'. old_value)
+    print('NEW in: ', new_value)
     return new_value[-1][0]
 
 init_state_modifier = SharedVariableModifier(network.transitions[-1].initial_state_, function=modifier_function, after_batch=True)
