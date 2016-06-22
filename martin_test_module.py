@@ -126,7 +126,8 @@ def no_reset_recurrent(*args, **kwargs):
             logger.info('>>>>>>>>>>>>>>> recurrent_apply called')
             logger.info('RECURRENT APPLY ARGS: '+str(args))
             logger.info('RECURRENT APPLY KWARGS: '+str(kwargs))
-            logger.info('STATES: '+str(type(kwargs['states'])))
+            state_info = kwargs['state']
+            logger.info('STATES: '+str(type(state_info)))
             # Extract arguments related to iteration and immediately relay the
             # call to the wrapped function if `iterate=False`
             iterate = kwargs.pop('iterate', True)
@@ -204,7 +205,7 @@ def no_reset_recurrent(*args, **kwargs):
                 # I suspect the following lines to be responsible for the reset of the states, so all I have to do -- at
                 # least from what I think -- is to set the state to its own value instead of to the init-state's value
                 else:
-                    logger.info('Case else, reset (?) procedure, state: '+kwargs['states'])
+                    logger.info('Case else, reset (?) procedure, state: '+str(state_info))
                     try:
                         # kwargs[state_name] = initial_states[state_name]  # OLD
                         # kwargs[state_name] = point on value of tensor variable, problem: HOW TO GET THEM IN HERE?
