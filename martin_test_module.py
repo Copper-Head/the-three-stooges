@@ -173,6 +173,8 @@ def no_reset_recurrent(*args, **kwargs):
                     logger.warning("unknown input {}".format(value) +
                                    unknown_scan_input)
 
+            logger.info('REST_KWARGS ('+brick.name+') '+str(rest_kwargs.items()))
+
             # Ensure that all initial states are available.
             initial_states = brick.initial_states(batch_size, as_dict=True,
                                                   *args, **kwargs)
