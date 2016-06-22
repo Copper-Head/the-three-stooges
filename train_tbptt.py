@@ -13,7 +13,7 @@ from blocks.monitoring.evaluators import AggregationBuffer
 from fuel.datasets.hdf5 import H5PYDataset
 from fuel.schemes import SequentialScheme, ShuffledScheme
 from fuel.streams import DataStream
-from numpy import load, array, ones
+from numpy import load, array, ones, all
 from theano import function, shared
 
 from custom_blocks import PadAndAddMasks, EarlyStopping
@@ -106,7 +106,7 @@ def modifier_function(iterations_done, old_value):
     print('NEW in: ', new_value[-1][0], new_value[0][0], sep='\n')
     value_a = new_value[-1][0]
     value_b = new_value[0][0]
-    return value_a if value_a != old_value else value_b if value_b != old_value else ones(10, dtype='float32')
+    return value_a if all(value_a != old_value) else value_b
 
 init_state_modifier = SharedVariableModifier(network.transitions[-1].initial_state_, function=modifier_function, after_batch=True)
 
