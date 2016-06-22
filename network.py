@@ -7,6 +7,8 @@ from blocks.model import Model
 from blocks.serialization import load_parameters
 from theano import tensor
 
+from martin_test_module import ZeroInitLSTM
+
 class NetworkType(object):
     """
     This enum represents the three types of networks we're looking at.
@@ -20,7 +22,7 @@ class NetworkType(object):
         if network_type == NetworkType.SIMPLE_RNN:
             return SimpleRecurrent
         elif network_type == NetworkType.LSTM:
-            return LSTM
+            return LSTM if reset_states else ZeroInitLSTM
         elif network_type == NetworkType.GRU:
             return GatedRecurrent
         else:

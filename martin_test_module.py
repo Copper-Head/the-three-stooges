@@ -1,5 +1,7 @@
 from __future__ import print_function
 
+from blocks.bricks.recurrent import LSTM, SimpleRecurrent, GatedRecurrent
+
 from blocks.algorithms import StepRule
 from blocks.bricks.recurrent import SimpleRecurrent, recurrent
 from blocks.bricks.base import Application, application, lazy
@@ -62,3 +64,11 @@ class OverrideStateReset(StepRule):
             if not param in self._dict:
                 step_dict[param] = value
         return step_dict, updates
+
+
+class ZeroInitLSTM(LSTM):
+
+    @application
+    def initial_states(self, batch_size, *args, **kwargs):
+        return [tensor.repeat(tensor.zeros(batch_size, self.dim)),
+                tensor.repeat(tensor.zeros(batch_size, self.dim))]
