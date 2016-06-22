@@ -131,7 +131,7 @@ def no_reset_recurrent(*args, **kwargs):
                 return application_function(brick, *args, **kwargs)
             reverse = kwargs.pop('reverse', False)
             scan_kwargs = kwargs.pop('scan_kwargs', {})
-            # TODO scan_kwargs['truncate_gradient'] = True OR number?
+            scan_kwargs['truncate_gradient'] = 10 # FIXME !!! better: CHECK
             return_initial_states = kwargs.pop('return_initial_states', False)
 
             # Push everything to kwargs
@@ -255,15 +255,12 @@ def no_reset_recurrent(*args, **kwargs):
             result = pack(result)
             if return_initial_states:
                 logger.warn('return_initial_states turned true. Result before: '+str(result))
-                # let's see what happens if initial_states were requested but are not returned
-                """
                 # Undo Subtensor
                 for i in range(len(states_given)):
                     assert isinstance(result[i].owner.op,
                                       tensor.subtensor.Subtensor)
                     result[i] = result[i].owner.inputs[0]
                 logger.warn('...result after: '+str(result))
-                """
             if updates:
                 application_call.updates = dict_union(application_call.updates,
                                                       updates)
