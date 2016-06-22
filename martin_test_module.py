@@ -246,7 +246,7 @@ def no_reset_recurrent(*args, **kwargs):
                 outputs_info=outputs_info,
                 non_sequences=list(contexts_given.values()),
                 n_steps=n_steps,
-                truncate_gradient=10,  # TODO check
+                #truncate_gradient=10,  # TODO check
                 go_backwards=reverse,
                 name='{}_{}_scan'.format(
                     brick.name, application.application_name),
