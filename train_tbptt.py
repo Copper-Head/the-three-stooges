@@ -84,7 +84,7 @@ states_to_compare = list(filter(lambda x: 'sequencegenerator_cost_matrix_states'
 # that its length is equal to T. This serves to make exploding gradients less severe.
 algorithm = GradientDescent(cost=cross_ent, parameters=cost_model.parameters,
                             step_rule=CompositeRule(components=[StepClipping(threshold=args.clipping), Adam()]),
-                            on_unused_sources="ignore")
+                            on_unused_sources="ignore", truncate_gradient=5)
 
 #OverrideStateReset(OrderedDict({init_state_2 : state_to_compare[0][-1]}))
 
