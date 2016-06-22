@@ -100,7 +100,7 @@ def no_reset_recurrent(*args, **kwargs):
 
     """
 
-    logger.info('RECURRENT DECORATOR ARGS: '+str(args))
+    top_level_args = args
 
     most_recent_state_values = {}  # FIXME: REMOVE
 
@@ -126,6 +126,7 @@ def no_reset_recurrent(*args, **kwargs):
 
             """
             logger.info('>>>>>>>>>>>>>>> recurrent_apply called')
+            logger.info('RECURRENT DECORATOR ARGS: '+str(top_level_args))
             # Extract arguments related to iteration and immediately relay the
             # call to the wrapped function if `iterate=False`
             iterate = kwargs.pop('iterate', True)
