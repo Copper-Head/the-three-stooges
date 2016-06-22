@@ -106,18 +106,14 @@ def modifier_function(iterations_done, old_value):
     #print('NEW in: ', new_value[-1][0], new_value[0][0], sep='\n')
     return new_value[-1][0]
 
-init_state_modifier = SharedVariableModifier(network.transitions[-1].initial_state_, function=modifier_function, after_batch=True)
+init_state_modifier = SharedVariableModifier(network.transitions[-1].initial_state_, function=modifier_function, after_n_batches=1)
 
 
 #state_function = function([state_to_compare], initial_states[2], updates=[(init_state_2, state_to_compare[0][-1])]) #TODO look at this, this is how it basically works!
 
 monitor_grad = TrainingDataMonitoring(variables=[cross_ent, aggregation.mean(algorithm.total_gradient_norm),
                                                  aggregation.mean(algorithm.total_step_norm)]+initial_states+[state_to_compare],
-                                      prefix="training")
-
-monitor_grad.set_conditions(after_batch=True)
-
-print('conditions:', monitor_grad._conditions)
+                                      prefix="training", after_n_batches=1)
 
 early_stopping = EarlyStopping(variables=[cross_ent], data_stream=data_stream_valid,
                                path="seqgen_" + args.type + "_" + "_".join([str(d) for d in network.hidden_dims]) + ".pkl",
