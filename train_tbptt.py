@@ -106,7 +106,7 @@ def modifier_function(iterations_done, old_value):
     print('NEW in: ', new_value[-1][0], new_value[0][0], sep='\n')
     value_a = new_value[-1][0]
     value_b = new_value[0][0]
-    if all(check_value.get_value() == zeros((1, old_value.dim), dtype='float32')):
+    if all(check_value.get_value() == zeros((1, old_value.size), dtype='float32')):
         check_value.set_value(old_value)
     new_value = value_a if all(value_a != check_value) else value_b
     return new_value
