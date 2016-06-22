@@ -13,8 +13,8 @@ from blocks.monitoring.evaluators import AggregationBuffer
 from fuel.datasets.hdf5 import H5PYDataset
 from fuel.schemes import SequentialScheme, ShuffledScheme
 from fuel.streams import DataStream
-from numpy import load
-from theano import function
+from numpy import load, array, ones
+from theano import function, shared
 
 from custom_blocks import PadAndAddMasks, EarlyStopping
 from network import *
@@ -37,7 +37,7 @@ args = parser.parse_args()
 dimensions = [int(d) for d in args.dimensions.split(',')]
 print('Dimensions:', dimensions)
 
-nkwargs = {'network_type': args.type, 'reset_states': False}
+nkwargs = {'network_type': args.type, 'reset_states': True}
 if dimensions:
     nkwargs['hidden_dims'] = dimensions
 
@@ -88,20 +88,17 @@ algorithm = GradientDescent(cost=cross_ent, parameters=cost_model.parameters,
 
 #OverrideStateReset(OrderedDict({init_state_2 : state_to_compare[0][-1]}))
 
-"""
 aggr = AggregationBuffer(variables=[state_to_compare], use_take_last=True)
 aggr.initialize_aggregators()
 
 def modifier_function(iterations_done, old_value):
-    values = aggr.get_aggregated_values()
-    new_value = values[state_to_compare.name][0][-1]
-    print(iterations_done, 'iterations done.\nRESETTING INIT_STATE_VAL FROM', old_value, 'TO', new_value)
-    aggr.initialize_aggregators()  # TODO what's the purpose of that? I observed them do it in the monitoring extensions after every request
-    return new_value
+    #values = aggr.get_aggregated_values()
+    #new_value = values[state_to_compare.name][0][-1]
+    #aggr.initialize_aggregators()  # TODO what's the purpose of that? I observed them do it in the monitoring extensions after every request
+    return shared(ones(10, dtype='float32'))
 
-# TODO: need to figure out how to influence the point in time when this is actually executed
-init_state_modifier = SharedVariableModifier(initial_states[2], function=modifier_function, after_batch=True)
-"""
+init_state_modifier = SharedVariableModifier(network.transitions[-1].initial_state_, function=modifier_function, after_batch=True)
+
 
 #state_function = function([state_to_compare], initial_states[2], updates=[(init_state_2, state_to_compare[0][-1])]) #TODO look at this, this is how it basically works!
 
@@ -115,9 +112,7 @@ early_stopping = EarlyStopping(variables=[cross_ent], data_stream=data_stream_va
 
 main_loop = MainLoop(algorithm=algorithm, data_stream=data_stream, model=cost_model,
                      extensions=[monitor_grad, FinishAfter(after_n_epochs=args.epochs), ProgressBar(),
-                                 Timing(), Printing()])
-
-print('UPDATES:', main_loop.algorithm.updates)
+                                 Timing(), Printing(), init_state_modifier])
 
 # remove update
 # updates = main_loop.algorithm.updates

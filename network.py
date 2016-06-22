@@ -85,7 +85,7 @@ class Network(object):
         self.transitions = rnns
         init_states = []
         id = 0
-        for rnn in rnns:
+        for rnn in rnns:  # note: the initial states collected here might not be the right ones
             init_state = None
             i = 0
             while i<len(rnn.parameters) and not init_state:
