@@ -115,6 +115,11 @@ monitor_grad = TrainingDataMonitoring(variables=[cross_ent, aggregation.mean(alg
                                                  aggregation.mean(algorithm.total_step_norm)]+initial_states+[state_to_compare],
                                       prefix="training")
 
+monitor_grad.set_conditions(before_training=True)
+monitor_grad.set_conditions(after_batch=True, just_aggregate=False)
+
+print('conditions:', *monitor_grad._conditions)
+
 early_stopping = EarlyStopping(variables=[cross_ent], data_stream=data_stream_valid,
                                path="seqgen_" + args.type + "_" + "_".join([str(d) for d in network.hidden_dims]) + ".pkl",
                                tolerance=4, prefix="validation")
@@ -125,7 +130,7 @@ main_loop = MainLoop(algorithm=algorithm, data_stream=data_stream, model=cost_mo
 
 main_loop.algorithm.add_updates(aggr.accumulation_updates)
 
-monitor_grad.set_conditions(after_batch=True, just_aggregate=False)
+
 
 # remove update
 # updates = main_loop.algorithm.updates
