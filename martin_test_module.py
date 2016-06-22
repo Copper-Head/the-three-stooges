@@ -246,6 +246,7 @@ def no_reset_recurrent(*args, **kwargs):
                 outputs_info=outputs_info,
                 non_sequences=list(contexts_given.values()),
                 n_steps=n_steps,
+                truncate_gradient=10,  # TODO check
                 go_backwards=reverse,
                 name='{}_{}_scan'.format(
                     brick.name, application.application_name),
@@ -328,7 +329,7 @@ class NoResetSimpleRecurrent(SimpleRecurrent):
         """
         logger.info('APPLY CALLED, value of states: '+str(states)+', brick='+str(self.name))
         next_states = inputs + tensor.dot(states, self.W)
-        next_states = self.children[0].apply(next_states, truncate_gradient=True)
+        next_states = self.children[0].apply(next_states)
         if mask:
             next_states = (mask[:, None] * next_states +
                            (1 - mask[:, None]) * states)
