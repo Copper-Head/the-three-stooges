@@ -127,7 +127,7 @@ def no_reset_recurrent(*args, **kwargs):
             logger.info('RECURRENT APPLY ARGS: '+str(args))
             logger.info('RECURRENT APPLY KWARGS: '+str(kwargs))
             state_info = kwargs['states']
-            logger.info('\nSTATES: '+(dir(state_info) if state_info else 'None')+'\n')
+            logger.info('\nSTATES: '+(str(dir(state_info)) if state_info else 'None')+'\n')
             # Extract arguments related to iteration and immediately relay the
             # call to the wrapped function if `iterate=False`
             iterate = kwargs.pop('iterate', True)
