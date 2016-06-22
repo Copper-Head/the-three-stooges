@@ -336,7 +336,7 @@ class NoResetSimpleRecurrent(SimpleRecurrent):
                            (1 - mask[:, None]) * states)
         return next_states
 
-    @application()#outputs=apply.states) TODO check, this is just another desperate trial
+    @application(outputs=None)
     def initial_states(self, batch_size, *args, **kwargs):
         logger.info('INITIAL_STATES CALLED, brick='+str(self.name))
         # return tensor.repeat(self._state[0][-1][None, :], batch_size, 0)  # this does not work, since this method is called BEFORE state is registered
