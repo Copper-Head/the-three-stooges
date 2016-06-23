@@ -3,7 +3,8 @@ from theano import function
 
 
 class StateComputer(object):
-    """Convenient interface to theano function for computing states/cells
+    """
+    Convenient interface to theano function for computing states/cells
     of a trained SequenceGenerator model.
 
     Expects a Model instance as argument. This model must also be created
@@ -30,7 +31,8 @@ class StateComputer(object):
         return cell_or_state and not_final_value
 
     def read_single_sequence(self, sequence):
-        """Combines list of aux var values (output from theano func) with their
+        """
+        Combines list of aux var values (output from theano func) with their
         corresponding labels.
 
         New and improved with (I think) more convenient interface.
@@ -59,9 +61,21 @@ class StateComputer(object):
         flattened_aux_vars = map(drop_batch_dim, computed_aux_vars)
         return dict(zip(self.state_var_names, flattened_aux_vars))
 
+    def read_sequence_batch(self, sequences, mask):
+        """
+        Basically read_single_sequence but for a whole batch to speed things up.
+
+        Note that, because I find it unlikely that someone wants to pass in a batch of strings, this only works with
+        sequences of integers atm. That is, the way the data is stored on disk. Mask needs to be computed beforehand
+        (easy via transformer).
+        """
+        computed_states = self.func(sequences, mask)
+        return dict(zip(self.state_var_names, computed_states))
+
 
 def drop_batch_dim(array_with_single_dims):
-    """When reading in one sentence at a time the batch dimension is superflous.
+    """
+    When reading in one sentence at a time the batch dimension is superflous.
 
     Using numpy.squeeze we get rid of it. This relies on that dimension being "1".
     Moreover, `squeeze` will remove ALL dimensions that are equal to 1, so be careful
