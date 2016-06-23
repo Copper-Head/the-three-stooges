@@ -8,7 +8,7 @@ from scipy.stats import pearsonr
 
 from custom_blocks import PadAndAddMasks
 from network import NetworkType, Network
-from util import StateComputer, mark_seq_len
+from util import StateComputer, mark_seq_len, mark_word_boundaries
 
 
 lstm_net = Network(NetworkType.LSTM)
@@ -41,9 +41,10 @@ try:
                 mask = mask_batch[sequence_ind, :]  # mask is NOT transposed!!
                 state_seq = state_seq[mask==1, :]  # throw away padding
                 # now get a marker and compute separately the correlation of each state seq with the marker seq
-                seq_len_correlator = mark_seq_len(state_seq)
+                seq_len_correlator = mark_word_boundaries(state_seq)
                 for dim in xrange(state_seq.shape[1]):
                     correlation_dict[state_type][dim] += pearsonr(state_seq[:, dim], seq_len_correlator)[0]
+        print "MADE IT THROUGH BATCH"
 except StopIteration:
     pass
 # at the very end, we need to divide all our summed up correlations by the number of sequences to get the average
