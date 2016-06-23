@@ -26,9 +26,10 @@ if __name__ == '__main__':
     ix2char = {}
     ix = 0
     di = 0  # debug
+    upper_limit = 15000000
     with open(data_location) as f:
         c = '#'
-        while c and di < 1000:
+        while c and di < upper_limit:
             di += 1
             try:
                 c = f.read(1)
@@ -43,7 +44,7 @@ if __name__ == '__main__':
                 elif c:
                     seq.append(char2int[c])
             if len(seq) == 100:
-                seqs.append(seq)
+                seqs.append(array(seq, dtype='int32'))
                 seq = []
 
     data = array(seqs)

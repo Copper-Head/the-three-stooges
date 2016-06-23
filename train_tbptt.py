@@ -192,9 +192,13 @@ early_stopping = EarlyStopping(variables=[cross_ent], data_stream=data_stream_va
                                path="seqgen_" + args.type + "_" + "_".join([str(d) for d in network.hidden_dims]) + ".pkl",
                                tolerance=4, prefix="validation")
 
+prkwargs = {
+    #'after_batch':True  # use this for prints after every batch
+}
+
 main_loop = MainLoop(algorithm=algorithm, data_stream=data_stream, model=cost_model,
-                     extensions=[monitor_grad, FinishAfter(after_n_epochs=args.epochs), ProgressBar(),
-                                 Timing(), Printing(after_batch=True)]+init_state_modifiers)
+                     extensions=[monitor_grad, early_stopping, FinishAfter(after_n_epochs=args.epochs), ProgressBar(),
+                                 Timing(), Printing(**prkwargs)]+init_state_modifiers)
 
 main_loop.algorithm.add_updates(aggr_0.accumulation_updates)
 main_loop.algorithm.add_updates(aggr_1.accumulation_updates)
