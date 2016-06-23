@@ -14,6 +14,7 @@ from util import StateComputer, mark_seq_len, mark_word_boundaries
 lstm_net = Network(NetworkType.LSTM)
 lstm_net.set_parameters('seqgen_lstm_512_512_512.pkl')
 map_chr_2_ind = cPickle.load(open("char_to_ind.pkl"))
+map_ind_2_chr = cPickle.load(open("ind_to_char.pkl"))
 
 sc = StateComputer(lstm_net.cost_model, map_chr_2_ind)
 correlation_dict = dict()
@@ -41,7 +42,7 @@ try:
                 mask = mask_batch[sequence_ind, :]  # mask is NOT transposed!!
                 state_seq = state_seq[mask==1, :]  # throw away padding
                 # now get a marker and compute separately the correlation of each state seq with the marker seq
-                seq_len_correlator = mark_word_boundaries(state_seq)
+                seq_len_correlator = mark_word_boundaries([map_ind_2_chr[ind] for ind in seq_batch[sequence_ind]])
                 for dim in xrange(state_seq.shape[1]):
                     correlation_dict[state_type][dim] += pearsonr(state_seq[:, dim], seq_len_correlator)[0]
         print "MADE IT THROUGH BATCH"
