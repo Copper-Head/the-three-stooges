@@ -105,16 +105,16 @@ def modifier_function_0(iterations_done, old_value):
     values = aggr_0.get_aggregated_values()
     new_value = values[state_to_compare_0.name]
     aggr_0.initialize_aggregators()  # TODO what's the purpose of that? I observed them do it in the monitoring extensions after every request
-    print('0:OLD ..:', old_value)
-    print('0:NEW in:', new_value[-1][0], new_value[0][0], sep='\n')
-    print('0:CHECK:', aggr_0.check_value.get_value(), sep='\n')
+    #print('0:OLD ..:', old_value)
+    #print('0:NEW in:', new_value[-1][0], new_value[0][0], sep='\n')
+    #print('0:CHECK:', aggr_0.check_value.get_value(), sep='\n')
     value_a = new_value[-1][0]
     value_b = new_value[0][0]
     if all(aggr_0.check_value.get_value() == zeros((1, old_value.size), dtype='float32')):
         aggr_0.check_value.set_value(old_value)
     new_value = value_a if all(value_a != aggr_0.check_value) else value_b
     aggr_0.check_value.set_value(new_value)
-    print('0:CHOICE:', new_value, sep='\n')
+    #print('0:CHOICE:', new_value, sep='\n')
     return new_value
 
 aggr_1 = AggregationBuffer(variables=[state_to_compare_1], use_take_last=True)
@@ -131,16 +131,16 @@ def modifier_function_1(iterations_done, old_value):
     values = aggr_1.get_aggregated_values()
     new_value = values[state_to_compare_1.name]
     aggr_1.initialize_aggregators()  # TODO what's the purpose of that? I observed them do it in the monitoring extensions after every request
-    print('1:OLD ..:', old_value)
-    print('1:NEW in:', new_value[-1][0], new_value[0][0], sep='\n')
-    print('1:CHECK:', aggr_1.check_value.get_value(), sep='\n')
+    #print('1:OLD ..:', old_value)
+    #print('1:NEW in:', new_value[-1][0], new_value[0][0], sep='\n')
+    #print('1:CHECK:', aggr_1.check_value.get_value(), sep='\n')
     value_a = new_value[-1][0]
     value_b = new_value[0][0]
     if all(aggr_1.check_value.get_value() == zeros((1, old_value.size), dtype='float32')):
         aggr_1.check_value.set_value(old_value)
     new_value = value_a if all(value_a != aggr_1.check_value) else value_b
     aggr_1.check_value.set_value(new_value)
-    print('1:CHOICE:', new_value, sep='\n')
+    #print('1:CHOICE:', new_value, sep='\n')
     return new_value
 
 aggr_2 = AggregationBuffer(variables=[state_to_compare_2], use_take_last=True)
@@ -157,16 +157,16 @@ def modifier_function_2(iterations_done, old_value):
     values = aggr_2.get_aggregated_values()
     new_value = values[state_to_compare_2.name]
     aggr_2.initialize_aggregators()  # TODO what's the purpose of that? I observed them do it in the monitoring extensions after every request
-    print('2:OLD ..:', old_value)
-    print('2:NEW in:', new_value[-1][0], new_value[0][0], sep='\n')
-    print('2:CHECK:', aggr_2.check_value.get_value(), sep='\n')
+    #print('2:OLD ..:', old_value)
+    #print('2:NEW in:', new_value[-1][0], new_value[0][0], sep='\n')
+    #print('2:CHECK:', aggr_2.check_value.get_value(), sep='\n')
     value_a = new_value[-1][0]
     value_b = new_value[0][0]
     if all(aggr_2.check_value.get_value() == zeros((1, old_value.size), dtype='float32')):
         aggr_2.check_value.set_value(old_value)
     new_value = value_a if all(value_a != aggr_2.check_value) else value_b
     aggr_2.check_value.set_value(new_value)
-    print('2:CHOICE:', new_value, sep='\n')
+    #print('2:CHOICE:', new_value, sep='\n')
     return new_value
 
 
