@@ -47,7 +47,7 @@ if __name__ == '__main__':
                 seqs.append(seq)
                 seq = []
 
-    data = array(seqs)
+    data = array(seqs, dtype='int32')
 
     split_n = int(training_size * data.shape[0])
 
