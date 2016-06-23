@@ -26,7 +26,7 @@ if __name__ == '__main__':
     ix2char = {}
     ix = 0
     di = 0  # debug
-    upper_limit = 15000000
+    upper_limit = 1000
     with open(data_location) as f:
         c = '#'
         while c and di < upper_limit:
@@ -47,7 +47,7 @@ if __name__ == '__main__':
                 seqs.append(seq)
                 seq = []
 
-    data = array(seqs)  # removed dtype, does it work now?
+    data = array(seqs)
 
     split_n = int(training_size * data.shape[0])
 
