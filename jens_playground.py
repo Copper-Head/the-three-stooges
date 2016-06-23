@@ -24,9 +24,16 @@ data_stream = PadAndAddMasks(
                                                                                     batch_size=128)),
     produces_examples=False)
 iterator = data_stream.get_epoch_iterator()
-while iterator:
-    something = next(iterator)
-    print type(something)
+n = 0
+try:
+    while iterator:
+        n += 1
+        something = next(iterator)
+        print type(something)
+except StopIteration:
+    pass
+print "GOT", n
+print "EXPECTED", train_data.num_examples/128.0
 raw_input("GOT THROUGH")
 
 verse = "1:7 And God made the firmament, and divided the waters which were " \
