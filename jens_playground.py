@@ -39,7 +39,7 @@ try:
             for sequence_ind in xrange(state_batch.shape[1]):
                 state_seq = state_batch[:, sequence_ind, :]
                 mask = mask_batch[sequence_ind, :]  # mask is NOT transposed!!
-                state_seq = state_seq[mask, :]  # throw away padding
+                state_seq = state_seq[mask==1, :]  # throw away padding
                 # now get a marker and compute separately the correlation of each state seq with the marker seq
                 seq_len_correlator = mark_seq_len(state_seq)
                 for dim in xrange(state_seq.shape[1]):
