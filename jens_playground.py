@@ -42,9 +42,9 @@ try:
                 mask = mask_batch[sequence_ind, :]  # mask is NOT transposed!!
                 state_seq = state_seq[mask==1, :]  # throw away padding
                 # now get a marker and compute separately the correlation of each state seq with the marker seq
-                seq_len_correlator = mark_word_boundaries([map_ind_2_chr[ind] for ind in seq_batch[sequence_ind]])
+                seq_len_correlator = mark_word_boundaries([map_ind_2_chr[ind] for ind in seq_batch[sequence_ind, mask==1]])
                 for dim in xrange(state_seq.shape[1]):
-                    correlation_dict[state_type][dim] += pearsonr(state_seq[mask==1:, dim], seq_len_correlator)[0]
+                    correlation_dict[state_type][dim] += pearsonr(state_seq[:, dim], seq_len_correlator)[0]
         print "MADE IT THROUGH BATCH"
 except StopIteration:
     pass
