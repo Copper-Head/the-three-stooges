@@ -27,4 +27,5 @@ for state in state_seqs:
         corrs[dim] = pearsonr(single_state_seq[:, dim], seq_len_correlator)[0]
     print "FOR THIS STATE", state, "WE GOT:"
     print corrs
+    print "LARGEST:", max(corrs), "(index:", numpy.argmax(corrs), ");", min(corrs), "(index:", numpy.argmin(corrs), ")"
     raw_input()
