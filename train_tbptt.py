@@ -93,7 +93,7 @@ algorithm = GradientDescent(cost=cross_ent, parameters=cost_model.parameters,
 
 aggr_0 = AggregationBuffer(variables=[state_to_compare_0], use_take_last=True)
 aggr_0.initialize_aggregators()
-aggr_0.check_value = shared(zeros((network.transitions[-1].dim), dtype='float32'))
+check_value_0 = shared(zeros((network.transitions[-1].dim), dtype='float32'))  # TODO: is it necessary or recommendable to add these to the computation graph is constants or sth like that?
 
 def modifier_function_0(iterations_done, old_value):
     """
@@ -110,16 +110,16 @@ def modifier_function_0(iterations_done, old_value):
     #print('0:CHECK:', aggr_0.check_value.get_value(), sep='\n')
     value_a = new_value[-1][0]
     value_b = new_value[0][0]
-    if all(aggr_0.check_value.get_value() == zeros((1, old_value.size), dtype='float32')):
-        aggr_0.check_value.set_value(old_value)
-    new_value = value_a if all(value_a != aggr_0.check_value) else value_b
-    aggr_0.check_value.set_value(new_value)
+    if all(check_value_0.get_value() == zeros((1, old_value.size), dtype='float32')):
+        check_value_0.set_value(old_value)
+    new_value = value_a if all(value_a != check_value_0) else value_b
+    check_value_0.set_value(new_value)
     #print('0:CHOICE:', new_value, sep='\n')
     return new_value
 
 aggr_1 = AggregationBuffer(variables=[state_to_compare_1], use_take_last=True)
 aggr_1.initialize_aggregators()
-aggr_1.check_value = shared(zeros((network.transitions[-1].dim), dtype='float32'))
+check_value_1 = shared(zeros((network.transitions[-1].dim), dtype='float32'))
 
 def modifier_function_1(iterations_done, old_value):
     """
@@ -136,16 +136,16 @@ def modifier_function_1(iterations_done, old_value):
     #print('1:CHECK:', aggr_1.check_value.get_value(), sep='\n')
     value_a = new_value[-1][0]
     value_b = new_value[0][0]
-    if all(aggr_1.check_value.get_value() == zeros((1, old_value.size), dtype='float32')):
-        aggr_1.check_value.set_value(old_value)
-    new_value = value_a if all(value_a != aggr_1.check_value) else value_b
-    aggr_1.check_value.set_value(new_value)
+    if all(check_value_1.get_value() == zeros((1, old_value.size), dtype='float32')):
+        check_value_1.set_value(old_value)
+    new_value = value_a if all(value_a != check_value_1) else value_b
+    check_value_1.set_value(new_value)
     #print('1:CHOICE:', new_value, sep='\n')
     return new_value
 
 aggr_2 = AggregationBuffer(variables=[state_to_compare_2], use_take_last=True)
 aggr_2.initialize_aggregators()
-aggr_2.check_value = shared(zeros((network.transitions[-1].dim), dtype='float32'))
+check_value_2 = shared(zeros((network.transitions[-1].dim), dtype='float32'))
 
 def modifier_function_2(iterations_done, old_value):
     """
@@ -159,13 +159,13 @@ def modifier_function_2(iterations_done, old_value):
     aggr_2.initialize_aggregators()  # TODO what's the purpose of that? I observed them do it in the monitoring extensions after every request
     #print('2:OLD ..:', old_value)
     #print('2:NEW in:', new_value[-1][0], new_value[0][0], sep='\n')
-    #print('2:CHECK:', aggr_2.check_value.get_value(), sep='\n')
+    #print('2:CHECK:', check_value_2.get_value(), sep='\n')
     value_a = new_value[-1][0]
     value_b = new_value[0][0]
-    if all(aggr_2.check_value.get_value() == zeros((1, old_value.size), dtype='float32')):
-        aggr_2.check_value.set_value(old_value)
-    new_value = value_a if all(value_a != aggr_2.check_value) else value_b
-    aggr_2.check_value.set_value(new_value)
+    if all(check_value_2.get_value() == zeros((1, old_value.size), dtype='float32')):
+        check_value_2.set_value(old_value)
+    new_value = value_a if all(value_a != check_value_2) else value_b
+    check_value_2.set_value(new_value)
     #print('2:CHOICE:', new_value, sep='\n')
     return new_value
 
