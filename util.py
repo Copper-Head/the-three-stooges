@@ -92,6 +92,7 @@ def mark_word_boundaries(seq):
     # define what's considered a word boundary. It's a set on purpose to permit
     # adding more character types as needed.
     wb = {
-        " "
+        " ",
+        "\n"
     }
     return numpy.array([1 if char in wb else 0 for char in seq])
