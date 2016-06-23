@@ -12,7 +12,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-s', '--setsize', type=float, default=.95, help='Determines the proportion of training data, value between 0 and 1.')
-    parser.add_argument('-f', '--file', type=str, default='./lk.data', help='The file to be converted.')
+    parser.add_argument('-f', '--file', type=str, default='./data/lk.data', help='The file to be converted.')
     args = parser.parse_args()
 
     training_size = args.setsize
