@@ -24,17 +24,14 @@ data_stream = PadAndAddMasks(
                                                                                     batch_size=128)),
     produces_examples=False)
 iterator = data_stream.get_epoch_iterator()
-n = 0
 try:
     while iterator:
-        n += 1
-        something = next(iterator)
-        print type(something)
+        seq_batch, mask_batch = next(iterator)
+        state_batch = sc.read_sequence_batch(seq_batch, mask_batch)
+        print "SEQUENCES:", seq_batch.shape
+        print "STATES:", state_batch.shape
 except StopIteration:
     pass
-print "GOT", n
-print "EXPECTED", train_data.num_examples/128.0
-raw_input("GOT THROUGH")
 
 verse = "1:7 And God made the firmament, and divided the waters which were " \
         "under the firmament from the waters which were above the firmament: " \
