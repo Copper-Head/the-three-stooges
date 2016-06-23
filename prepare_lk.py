@@ -44,7 +44,7 @@ if __name__ == '__main__':
                 elif c:
                     seq.append(char2int[c])
             if len(seq) == 100:
-                seqs.append(array(seq, dtype='int32'))
+                seqs.append(seq)
                 seq = []
 
     data = array(seqs)
