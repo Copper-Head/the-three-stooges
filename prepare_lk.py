@@ -26,7 +26,7 @@ if __name__ == '__main__':
     ix2char = {}
     ix = 0
     di = 0  # debug
-    upper_limit = 15000000
+    upper_limit = 64000
     with open(data_location) as f:
         c = '#'
         while c and di < upper_limit:
