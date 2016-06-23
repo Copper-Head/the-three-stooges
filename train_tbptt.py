@@ -34,10 +34,15 @@ parser.add_argument("-d", "--dimensions", default="512,512,512", type=str, help=
                                                                                 " a two-layered network with dims 100)")
 args = parser.parse_args()
 
+char2ix = load(ALPHABET_FILE).item()
+ix2char = {}
+for k, v in char2ix.items():
+    ix2char[v] = k
+
 dimensions = [int(d) for d in args.dimensions.split(',')]
 print('Dimensions:', dimensions)
 
-nkwargs = {'network_type': args.type, 'reset_states': False}
+nkwargs = {'network_type': args.type, 'reset_states': False, 'input_dim': len(ix2char)}
 if dimensions:
     nkwargs['hidden_dims'] = dimensions
 
@@ -65,12 +70,6 @@ data_stream_valid = PadAndAddMasks(DataStream.default_stream(dataset=valid_data,
 # - training cost every 200 batches (computed along the way, so cheap to do), as well as gradient and step lengths to
 #   detect exploding gradient problems
 # - validation cost once every epoch
-
-
-char2ix = load(ALPHABET_FILE).item()
-ix2char = {}
-for k, v in char2ix.items():
-    ix2char[v] = k
 
 sc = StateComputer(network.cost_model, ix2char)
 
