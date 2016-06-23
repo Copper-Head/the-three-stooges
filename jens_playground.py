@@ -16,23 +16,45 @@ lstm_net.set_parameters('seqgen_lstm_512_512_512.pkl')
 map_chr_2_ind = cPickle.load(open("char_to_ind.pkl"))
 
 sc = StateComputer(lstm_net.cost_model, map_chr_2_ind)
+correlation_dict = dict()
+for name in sc.state_var_names:
+    correlation_dict[name] = numpy.zeros(512, dtype=float)  # TODO NOT VERY GENERAL!!!
 
 
-train_data = H5PYDataset("bible.hdf5", which_sets=("train",), load_in_memory=True)
+valid_data = H5PYDataset("bible.hdf5", which_sets=("valid",), load_in_memory=True)
 data_stream = PadAndAddMasks(
-    DataStream.default_stream(dataset=train_data, iteration_scheme=SequentialScheme(train_data.num_examples,
+    DataStream.default_stream(dataset=valid_data, iteration_scheme=SequentialScheme(valid_data.num_examples,
                                                                                     batch_size=128)),
     produces_examples=False)
 iterator = data_stream.get_epoch_iterator()
 try:
     while iterator:
         seq_batch, mask_batch = next(iterator)
-        state_batch = sc.read_sequence_batch(seq_batch, mask_batch)
-        print "SEQUENCES:", seq_batch.shape
-        print "STATES:", state_batch.shape
+        state_batch_dict = sc.read_sequence_batch(seq_batch, mask_batch)
+        # unfortunately we don't have a "batched correlation", and padding could lead to problems here, so one by one...
+        # first iterate over the different layers and states/cells
+        for state_type in state_batch_dict:
+            state_batch = state_batch_dict[state_type]
+            # and then over the different sequences in the batch (always remember, axis 1, not 0)
+            for sequence_ind in xrange(state_batch.shape[1]):
+                state_seq = state_batch[:, sequence_ind, :]
+                mask = mask_batch[sequence_ind, :]  # mask is NOT transposed!!
+                state_seq = state_seq[mask, :]  # throw away padding
+                # now get a marker and compute separately the correlation of each state seq with the marker seq
+                seq_len_correlator = mark_seq_len(state_seq)
+                for dim in xrange(state_seq.shape[1]):
+                    correlation_dict[state_type][dim] += pearsonr(state_seq[:, dim], seq_len_correlator)[0]
 except StopIteration:
     pass
+# at the very end, we need to divide all our summed up correlations by the number of sequences to get the average
+for state_name in correlation_dict:
+    correlation_dict[state_name] /= valid_data.num_examples
+    print state_name
+    print correlation_dict[state_name]
+    print "LARGEST:", max(correlation_dict[state_name]), min(correlation_dict[state_name])
+    print "\n\n"
 
+"""
 verse = "1:7 And God made the firmament, and divided the waters which were " \
         "under the firmament from the waters which were above the firmament: " \
         "and it was so."
@@ -49,3 +71,4 @@ for state in state_seqs:
     print corrs
     print "LARGEST:", max(corrs), "(index:", numpy.argmax(corrs), ");", min(corrs), "(index:", numpy.argmin(corrs), ")"
     raw_input()
+"""
