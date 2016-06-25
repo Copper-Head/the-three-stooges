@@ -24,6 +24,9 @@ def hinton_diagram(matrix, max_weight=None, ax=None, xticks=None):
         ax.xaxis.set_tick_params(width=0, labelsize=30)
         ax.set_xticks(range(len(xticks)))
         ax.set_xticklabels(list(xticks))
+    else:
+        # if no xticks specified kill x axis as well
+        ax.xaxis.set_major_locator(plt.NullLocator())
 
     for (x, y), w in np.ndenumerate(matrix):
         color = 'white' if w > 0 else 'black'
@@ -35,5 +38,4 @@ def hinton_diagram(matrix, max_weight=None, ax=None, xticks=None):
 
     # Not quite sure what these do atm
     ax.autoscale_view()
-    ax.invert_yaxis()
     return ax
