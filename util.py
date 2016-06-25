@@ -98,13 +98,13 @@ def mark_word_boundaries(seq):
     return numpy.array([1 if char in wb else 0 for char in seq])
 
 
-def var_pos_mean(value_list, var_name, pos_indx=None):
-    """Retrieves and averages variable's value given it's name and some index.
+def filter_by_threshold(neuron_array, threshold=1):
+    """Tells which neuron activations surpass a certain threshold.
 
-    value_list is assumed to be a list of StateComputer.read_single_sequence results.
-    pos_indx can in theory be a range of indices.
+    Args
+    neuron_array: numpy array of neuron activation values
+    threshold: numeric value by which to filter neurons.
+
+    Returns: indices of neurons with activations greater than threshold.
     """
-    var_pos_vals = [v[var_name] for v in value_list]
-    if pos_indx:
-        var_pos_vals = [v[pos_indx] for v in var_pos_vals]
-    return numpy.mean(var_pos_vals, axis=0)
+    return numpy.nonzero(neuron_array > threshold)
