@@ -60,3 +60,6 @@ target/
 
 #Ipython Notebook
 .ipynb_checkpoints
+
+# Stooge-specific: don't check in data by mistake!
+data/
