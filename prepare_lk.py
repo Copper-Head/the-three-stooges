@@ -96,7 +96,18 @@ if __name__ == '__main__':
 
     split_n = int(training_size * data.shape[0])
 
-    dataproc.split_hdf5_file(OUT_FILE_NAME, data[:split_n], data[split_n:])
+     # write hdf5
+
+    f = h5py.File(name=OUT_FILE_NAME, mode='w')
+    character_seqs = f.create_dataset("character_seqs", data.shape, dtype='int32')
+    character_seqs[...] = data
+
+    split_dict = {"train": {"character_seqs": (0, split_n)},
+                  "valid": {"character_seqs": (split_n, data.shape[0])}}
+
+    f.attrs["split"] = H5PYDataset.create_split_array(split_dict)
+    f.flush()
+    f.close()
 
     # store alphabet
     alphabet = array(ix2char)
