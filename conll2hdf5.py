@@ -30,7 +30,6 @@ for fname in files:
                 seq.append(line.split('\t')[1])
         seqs.append(seq)
 
-
 counter = Counter(list(chain(*seqs)))
 ix_seq = []
 ix_seqs = []
