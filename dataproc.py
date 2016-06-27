@@ -19,12 +19,13 @@ def split_hdf5_file(file_path, train_data, val_data, varlen=False):
     else:
         our_dtype = "int32"
 
-    all_data = np.vstack((train_data, val_data))
+    # We have to combine these as lists in order to handle variable len data
+    all_data = list(train_data) + list(val_data)
     split_at = train_data.shape[0]
-    data_size = all_data.shape[0]
+    data_size = len(all_data)
 
     with h5py.File(file_path, mode="w") as f:
-        dataset = f.create_dataset("character_seqs", all_data.shape, dtype=our_dtype)
+        dataset = f.create_dataset("character_seqs", (data_size,), dtype=our_dtype)
         dataset[...] = all_data
 
         split_dict = {"train": {"character_seqs": (0, split_at)},
