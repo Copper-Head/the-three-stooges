@@ -4,11 +4,11 @@ import h5py
 from fuel.datasets import H5PYDataset
 
 
-def split_hdf5_file(name, train_data, val_data, varlen=False):
+def split_hdf5_file(file_path, train_data, val_data, varlen=False):
     """Generates a split HDF5 file.
 
     Args:
-    name -> string, filepath to save the dataset
+    file_path -> string, filepath to save the dataset
     train_data -> numpy array, training data
     val_data -> same as train_data, but validation.
     varlen -> boolean flag indicates whether or not data has variable length.
@@ -23,8 +23,8 @@ def split_hdf5_file(name, train_data, val_data, varlen=False):
     split_at = train_data.shape[0]
     data_size = all_data.shape
 
-    with h5py.File(name, mode="w") as f:
-        dataset = f.create_dataset("character_seqs", data_size, dtype=our_dtype)
+    with h5py.File(file_path, mode="w") as f:
+        dataset = f.create_dataset("character_seqs", all_data.shape, dtype=our_dtype)
         dataset[...] = all_data
 
         split_dict = {"train": {"character_seqs": (0, split_at)},
