@@ -3,6 +3,7 @@ from fuel.datasets import H5PYDataset
 import h5py
 from numpy import array, save
 import re
+from os.path import exists
 
 PROGRESS_STEP = 10000
 
@@ -41,21 +42,27 @@ def get_raw_data(file_path):
                         c += f.read(1)
                         if c == '*/':
                             read = 1
+    return raw
 
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-s', '--setsize', type=float, default=.95, help='Determines the proportion of training data, value between 0 and 1.')
-    parser.add_argument('-f', '--file', type=str, default='./data/lk.data', help='The file to be converted.')
+    parser.add_argument('-f', '--file', type=str, default='', help='The file to be converted.')
+
 
     args = parser.parse_args()
 
     training_size = args.setsize
     test_size = 1 - training_size
 
-    raw = get_raw_data(args.file)
-    with open(RAW_DATA_OUT_NAME, 'w') as f:
-        f.write(raw)
+    if not args.file:
+        with open(RAW_DATA_OUT_NAME) as f:
+            raw = f.read()
+    else:
+        raw = get_raw_data(args.file)
+        with open(RAW_DATA_OUT_NAME, 'w') as f:
+            f.write(raw)
 
     seq = []
     seqs = []
@@ -64,7 +71,11 @@ if __name__ == '__main__':
     ix = 0
     di = 0  # debug
     upper_limit = int((len(raw) * 15000000)/500000000)
-    fixed_len = 200
+    print(upper_limit)  #10111676
+
+    batch_size = 1000
+
+    for b in 
 
     for i in range(0, len(raw), fixed_len):
         line = raw[i:i+fixed_len]
@@ -76,7 +87,7 @@ if __name__ == '__main__':
                 seq.append(ix)
                 ix += 1
         seqs.append(seq)
-        seq = ''
+        seq = []
 
     data = array(seqs)
 
