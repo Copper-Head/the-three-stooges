@@ -16,7 +16,7 @@ parser.add_argument('-n', '--name', type=str, help='Specifies the corpus name.')
 args = parser.parse_args()
 
 target_file = './data/'+args.name+'_.hdf5'
-alphabet_file = './data/'+args.dir+'_ix2tok.npy'
+alphabet_file = './data/'+args.name+'_ix2tok.npy'
 
 seqs = []
 files = filter(lambda f: f.endswith('.conll'), listdir(args.dir))
@@ -57,4 +57,4 @@ dp.split_hdf5_file(target_file, seq_arr[:split_n], seq_arr[split_n:], varlen=Tru
 
 # save vocab indexing
 ix2tok = {v: k for k, v in tok2ix.items()}
-save(array(ix2tok))
+save(alphabet_file, array(ix2tok))

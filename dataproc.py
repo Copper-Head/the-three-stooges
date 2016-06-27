@@ -6,7 +6,6 @@ from fuel.datasets import H5PYDataset
 
 def split_hdf5_file(file_path, train_data, val_data, varlen=False):
     """Generates a split HDF5 file.
-
     Args:
     file_path -> string, filepath to save the dataset
     train_data -> numpy array, training data
@@ -29,13 +28,12 @@ def split_hdf5_file(file_path, train_data, val_data, varlen=False):
         dataset[...] = all_data
 
         split_dict = {"train": {"character_seqs": (0, split_at)},
-                      "valid": {"character_seqs": (split_at, data_size[1])}}
+                      "valid": {"character_seqs": (split_at, data_size)}}
         f.attrs["split"] = H5PYDataset.create_split_array(split_dict)
 
 
 def random_train_val_split(data, val_size):
     """Splits data into training and validation sets randomly.
-
     Expets a numpy array `data` argument and an int `val_size` specifying how big
     the validation size should be.
     Returns tuple (training_data, validation_data)
