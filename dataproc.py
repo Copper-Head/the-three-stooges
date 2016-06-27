@@ -21,14 +21,14 @@ def split_hdf5_file(name, train_data, val_data, varlen=False):
 
     all_data = np.vstack((train_data, val_data))
     split_at = train_data.shape[0]
-    data_size = all_data.shape[0]
+    data_size = all_data.shape
 
     with h5py.File(name, mode="w") as f:
         dataset = f.create_dataset("character_seqs", data_size, dtype=our_dtype)
         dataset[...] = all_data
 
         split_dict = {"train": {"character_seqs": (0, split_at)},
-                      "valid": {"character_seqs": (split_at, data_size)}}
+                      "valid": {"character_seqs": (split_at, data_size[1])}}
         f.attrs["split"] = H5PYDataset.create_split_array(split_dict)
 
 

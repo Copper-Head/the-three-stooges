@@ -5,6 +5,8 @@ from numpy import array, save
 import re
 from os.path import exists
 
+import dataproc
+
 PROGRESS_STEP = 10000
 
 OUT_FILE_NAME = './data/lk.hdf5'
@@ -69,54 +71,32 @@ if __name__ == '__main__':
     char2int = {}
     ix2char = {}
     ix = 0
-    di = 0  # debug
     upper_limit = int((len(raw) * 15000000)/500000000)
-    print(upper_limit)  #10111676
+    min_len = 1500
 
-    batch_size = 1000
+    batch_size = 10000
 
     seqs = []
     p_old = 0
+    step = int(upper_limit/batch_size)
 
-    for b in range(0, upper_limit-batch_size+1, batch_size):
-        p = b+batch_size
-        while raw[p] != '}':
-            p -= 1
-        seqs.append(raw[p_old:p+1])
-        if not seqs[-1]:
-            raise ValueError('Empty sequence added!')
-        p_old = p
-
-    print(*[len(s) for s in seqs])
-    exit()
-
-    for i in range(0, len(raw), fixed_len):
-        line = raw[i:i+fixed_len]
-        for c in line:
+    for b in range(0, upper_limit, step):
+        seq = raw[b:b+step]
+        seq_ix = []
+        for c in seq:
             if c in char2int:
-                seq.append(char2int[c])
+                seq_ix.append(char2int[c])
             else:
                 char2int[c] = ix
-                seq.append(ix)
+                seq_ix.append(ix)
                 ix += 1
-        seqs.append(seq)
-        seq = []
+        seqs.append(seq_ix)
 
     data = array(seqs)
 
     split_n = int(training_size * data.shape[0])
 
-    # write hdf5
-
-    f = h5py.File(name=OUT_FILE_NAME, mode='w')
-    character_seqs = f.create_dataset("character_seqs", data.shape, dtype='int32')
-    character_seqs[...] = data
-
-    split_dict = {"train": {"character_seqs": (0, split_n)},
-                  "valid": {"character_seqs": (split_n, data.shape[0])}}
-    f.attrs["split"] = H5PYDataset.create_split_array(split_dict)
-    f.flush()
-    f.close()
+    dataproc.split_hdf5_file(OUT_FILE_NAME, data[:split_n], data[split_n:])
 
     # store alphabet
     alphabet = array(ix2char)
