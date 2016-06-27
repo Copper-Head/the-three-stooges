@@ -76,9 +76,14 @@ state_super_dict = dict()
 for name in sc.state_var_names:
     state_super_dict[name] = numpy.empty(shape=(0, 512))  # TODO NUMBER OF CELLS NOT VERY GENERAL
 super_marker = numpy.empty(shape=(0,))
+
+prediction_alignment = True
 try:
     while iterator:
         seq_batch, mask_batch = next(iterator)
+        if not prediction_alignment:
+            # "remove" last element of each sequence by modifying mask
+            mask_batch[numpy.arange(mask_batch.shape[0]), mask_batch.sum(axis=1) - 1] = 0
         state_batch_dict = sc.read_sequence_batch(seq_batch, mask_batch)
         # reshape mask: we only need to do this once per batch, not again for each state_type
         # mask is in shape batch_size x seq_len, so NOT transposed, so it is flattened in C order
@@ -88,6 +93,9 @@ try:
         super_marker = numpy.append(super_marker, seq_len_correlator)
         for state_type in state_batch_dict:
             state_batch = state_batch_dict[state_type]
+            if not prediction_alignment:
+                # throw away initial state
+                state_batch = state_batch[1:, :]
             # note: order of reshape is Fortran because states are "transposed" into seq_len x batch_size x dim
             state_reshaped = state_batch.reshape((state_batch.shape[0]*state_batch.shape[1], state_batch.shape[2]),
                                                  order="F")
