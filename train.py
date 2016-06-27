@@ -25,7 +25,7 @@ parser.add_argument("-d", "--dimensions", default="512,512,512", type=str, help=
                                                                          " a two-layered network with dims 100)")
 parser.add_argument('-f', '--file', type=str, help='Specifies the data used for training.')
 parser.add_argument('-a', '--alphafile', type=str, help='Specifies the location of the alphabet file.')
-parser.add_argument('-b', '--batchsize', type=int, help='Set the batch size for training, set -1 for all in one batch and one batch per epoch.')
+parser.add_argument('-b', '--batchsize', type=int, help='Set the batch size for training, set 0 for all in one batch and one batch per epoch.')
 
 args = parser.parse_args()
 
@@ -61,11 +61,11 @@ valid_data = H5PYDataset(args.file, which_sets=("valid",), load_in_memory=True)
 # see custom_blocks for the transformer
 data_stream = PadAndAddMasks(
     DataStream.default_stream(dataset=train_data, iteration_scheme=ShuffledScheme(train_data.num_examples,
-                                                                                  batch_size=train_data.num_examples if args.)),
+                                                                                  batch_size=train_data.num_examples if not args.batchsize else args.batchsize)),
     produces_examples=False)  # I don't know what this does or why you have to pass it but apparently you do
 data_stream_valid = PadAndAddMasks(
     DataStream.default_stream(dataset=valid_data, iteration_scheme=SequentialScheme(valid_data.num_examples,
-                                                                                    batch_size=valid_data.num_examples)),
+                                                                                    batch_size=valid_data.num_examples if not args.batchsize else args.batchsize)),
     produces_examples=False)
 
 # monitor:
