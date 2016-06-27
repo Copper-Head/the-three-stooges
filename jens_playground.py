@@ -19,6 +19,12 @@ def mark_seq_len_batch(seq_batch, mask_batch):
     return padded_markers[mask_batch.flatten(order="C") == 1]
 
 
+def mark_word_boundaries_batch(seq_batch, mask_batch):
+    padded_markers = numpy.array([[map_ind_2_chr[ind] for ind in seq] for seq in seq_batch])
+    padded_markers = padded_markers.flatten(order="C")
+    return padded_markers[mask_batch.flatten(order="C") == 1]
+
+
 lstm_net = Network(NetworkType.LSTM)
 lstm_net.set_parameters('seqgen_lstm_512_512_512.pkl')
 map_chr_2_ind = cPickle.load(open("char_to_ind.pkl"))
@@ -78,10 +84,11 @@ try:
         # mask is in shape batch_size x seq_len, so NOT transposed, so it is flattened in C order
         mask_reshaped = mask_batch.flatten(order="C")
         # get marker (very preliminary...)
-        seq_len_correlator = mark_seq_len_batch(seq_batch, mask_batch)
+        seq_len_correlator = mark_word_boundaries_batch(seq_batch, mask_batch)
         super_marker = numpy.append(super_marker, seq_len_correlator)
         for state_type in state_batch_dict:
             state_batch = state_batch_dict[state_type]
+            # note: order of reshape is Fortran because states are "transposed" into seq_len x batch_size x dim
             state_reshaped = state_batch.reshape((state_batch.shape[0]*state_batch.shape[1], state_batch.shape[2]),
                                                  order="F")
             # throw away padding
@@ -94,7 +101,7 @@ except StopIteration:
 # do correlations between super long sequences...
 for state_name in correlation_dict:
     for dim in xrange(correlation_dict[state_name].shape[0]):
-        correlation_dict[state_name][dim] = pearsonr(state_super_dict[state_name][:, dim], super_marker)
+        correlation_dict[state_name][dim] = pearsonr(state_super_dict[state_name][:, dim], super_marker)[0]
     print state_name
     print correlation_dict[state_name]
     print "LARGEST:", max(correlation_dict[state_name]), min(correlation_dict[state_name])
