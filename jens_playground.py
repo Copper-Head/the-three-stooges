@@ -94,8 +94,9 @@ try:
         for state_type in state_batch_dict:
             state_batch = state_batch_dict[state_type]
             if not prediction_alignment:
-                # throw away initial state
-                state_batch = state_batch[1:, :]
+                # "throw away" initial state by rolling array backwards -- hacky, but sidesteps problems with needing
+                # different masks for the sequences (the modified one further above) and for states (the "regular" one)
+                state_batch = numpy.roll(state_batch, shift=-1, axis=0)
             # note: order of reshape is Fortran because states are "transposed" into seq_len x batch_size x dim
             state_reshaped = state_batch.reshape((state_batch.shape[0]*state_batch.shape[1], state_batch.shape[2]),
                                                  order="F")
