@@ -35,7 +35,7 @@ print('Dimensions:', dimensions)
 
 ix2char = load(args.alphafile).item()
 
-nkwargs = {'network_type': args.type, 'input_dim': len(ix2char), 'reset_states': False}
+nkwargs = {'network_type': args.type, 'input_dim': len(ix2char)}
 if dimensions:
     nkwargs['hidden_dims'] = dimensions
 
