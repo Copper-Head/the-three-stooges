@@ -75,7 +75,20 @@ if __name__ == '__main__':
 
     batch_size = 1000
 
-    for b in 
+    seqs = []
+    p_old = 0
+
+    for b in range(0, upper_limit-batch_size+1, batch_size):
+        p = b+batch_size
+        while raw[p] != '}':
+            p -= 1
+        seqs.append(raw[p_old:p+1])
+        if not seqs[-1]:
+            raise ValueError('Empty sequence added!')
+        p_old = p
+
+    print(*[len(s) for s in seqs])
+    exit()
 
     for i in range(0, len(raw), fixed_len):
         line = raw[i:i+fixed_len]
