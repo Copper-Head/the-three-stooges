@@ -60,11 +60,11 @@ valid_data = H5PYDataset(args.file, which_sets=("valid",), load_in_memory=True)
 # see custom_blocks for the transformer
 data_stream = PadAndAddMasks(
     DataStream.default_stream(dataset=train_data, iteration_scheme=ShuffledScheme(train_data.num_examples,
-                                                                                  batch_size=9501)),
+                                                                                  batch_size=train_data.num_examples)),
     produces_examples=False)  # I don't know what this does or why you have to pass it but apparently you do
 data_stream_valid = PadAndAddMasks(
     DataStream.default_stream(dataset=valid_data, iteration_scheme=SequentialScheme(valid_data.num_examples,
-                                                                                    batch_size=501)),
+                                                                                    batch_size=valid_data.num_examples)),
     produces_examples=False)
 
 # monitor:
