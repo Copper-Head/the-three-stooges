@@ -24,7 +24,7 @@ def split_hdf5_file(file_path, train_data, val_data, varlen=False):
     data_size = all_data.shape[0]
 
     with h5py.File(file_path, mode="w") as f:
-        dataset = f.create_dataset("character_seqs", data_size, dtype=our_dtype)
+        dataset = f.create_dataset("character_seqs", all_data.shape, dtype=our_dtype)
         dataset[...] = all_data
 
         split_dict = {"train": {"character_seqs": (0, split_at)},
