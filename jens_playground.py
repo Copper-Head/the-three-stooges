@@ -11,6 +11,14 @@ from network import NetworkType, Network
 from util import StateComputer, mark_seq_len, mark_word_boundaries
 
 
+def mark_seq_len_batch(seq_batch, mask_batch):
+    # get markers separately, then reshape
+    padded_markers = numpy.array([numpy.arange(len(seq)) for seq in seq_batch])
+    padded_markers = padded_markers.flatten(order="C")
+    # throw away padding
+    return padded_markers[mask_batch.flatten(order="C") == 1]
+
+
 lstm_net = Network(NetworkType.LSTM)
 lstm_net.set_parameters('seqgen_lstm_512_512_512.pkl')
 map_chr_2_ind = cPickle.load(open("char_to_ind.pkl"))
@@ -28,6 +36,7 @@ data_stream = PadAndAddMasks(
                                                                                     batch_size=128)),
     produces_examples=False)
 iterator = data_stream.get_epoch_iterator()
+"""
 try:
     while iterator:
         seq_batch, mask_batch = next(iterator)
@@ -40,9 +49,9 @@ try:
             for sequence_ind in xrange(state_batch.shape[1]):
                 state_seq = state_batch[:, sequence_ind, :]
                 mask = mask_batch[sequence_ind, :]  # mask is NOT transposed!!
-                state_seq = state_seq[mask==1, :]  # throw away padding
+                state_seq = state_seq[mask == 1, :]  # throw away padding
                 # now get a marker and compute separately the correlation of each state seq with the marker seq
-                seq_len_correlator = mark_word_boundaries([map_ind_2_chr[ind] for ind in seq_batch[sequence_ind, mask==1]])
+                seq_len_correlator = mark_word_boundaries([map_ind_2_chr[ind] for ind in seq_batch[sequence_ind, mask == 1]])
                 for dim in xrange(state_seq.shape[1]):
                     correlation_dict[state_type][dim] += pearsonr(state_seq[:, dim], seq_len_correlator)[0]
         print "MADE IT THROUGH BATCH"
@@ -55,22 +64,38 @@ for state_name in correlation_dict:
     print correlation_dict[state_name]
     print "LARGEST:", max(correlation_dict[state_name]), min(correlation_dict[state_name])
     print "\n\n"
-
 """
-verse = "1:7 And God made the firmament, and divided the waters which were " \
-        "under the firmament from the waters which were above the firmament: " \
-        "and it was so."
-seq_len_correlator = mark_seq_len(verse)
 
-state_seqs = sc.read_single_sequence(verse)
-corrs_with_length = dict()
-for state in state_seqs:
-    single_state_seq = state_seqs[state]  # seq_len x 512 array
-    corrs = numpy.zeros(single_state_seq.shape[1])
-    for dim in xrange(single_state_seq.shape[1]):
-        corrs[dim] = pearsonr(single_state_seq[:, dim], seq_len_correlator)[0]
-    print "FOR THIS STATE", state, "WE GOT:"
-    print corrs
-    print "LARGEST:", max(corrs), "(index:", numpy.argmax(corrs), ");", min(corrs), "(index:", numpy.argmin(corrs), ")"
-    raw_input()
-"""
+state_super_dict = dict()
+for name in sc.state_var_names:
+    state_super_dict[name] = numpy.empty(shape=(0, 512))  # TODO NUMBER OF CELLS NOT VERY GENERAL
+super_marker = numpy.empty(shape=(0,))
+try:
+    while iterator:
+        seq_batch, mask_batch = next(iterator)
+        state_batch_dict = sc.read_sequence_batch(seq_batch, mask_batch)
+        # reshape mask: we only need to do this once per batch, not again for each state_type
+        # mask is in shape batch_size x seq_len, so NOT transposed, so it is flattened in C order
+        mask_reshaped = mask_batch.flatten(order="C")
+        # get marker (very preliminary...)
+        seq_len_correlator = mark_seq_len_batch(seq_batch, mask_batch)
+        super_marker = numpy.append(super_marker, seq_len_correlator)
+        for state_type in state_batch_dict:
+            state_batch = state_batch_dict[state_type]
+            state_reshaped = state_batch.reshape((state_batch.shape[0]*state_batch.shape[1], state_batch.shape[2]),
+                                                 order="F")
+            # throw away padding
+            state_reshaped = state_reshaped[mask_reshaped == 1, :]
+            # vstack will be very slow; here's hoping the relatively small number of operations will make it bearable...
+            state_super_dict[state_type] = numpy.vstack((state_super_dict[state_type], state_reshaped))
+        print "MADE IT THROUGH BATCH"
+except StopIteration:
+    pass
+# do correlations between super long sequences...
+for state_name in correlation_dict:
+    for dim in xrange(correlation_dict[state_name].shape[0]):
+        correlation_dict[state_name][dim] = pearsonr(state_super_dict[state_name][:, dim], super_marker)
+    print state_name
+    print correlation_dict[state_name]
+    print "LARGEST:", max(correlation_dict[state_name]), min(correlation_dict[state_name])
+    print "\n\n"
