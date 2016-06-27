@@ -73,15 +73,15 @@ class StateComputer(object):
         return dict(zip(self.state_var_names, computed_states))
 
 
-def drop_batch_dim(array_with_single_dims):
+def drop_batch_dim(array_with_batch_dim):
     """
     When reading in one sentence at a time the batch dimension is superflous.
 
-    Using numpy.squeeze we get rid of it. This relies on that dimension being "1".
-    Moreover, `squeeze` will remove ALL dimensions that are equal to 1, so be careful
-    what you pass to this function.
+    Using numpy.squeeze we get rid of it. This relies on two assumptions:
+    - that dimension being "1"
+    - that being the second dimension (shape[1])
     """
-    return numpy.squeeze(array_with_single_dims)
+    return numpy.squeeze(array_with_batch_dim, axis=1)
 
 
 def mark_seq_len(seq):
