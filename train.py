@@ -26,6 +26,7 @@ parser.add_argument("-d", "--dimensions", default="512,512,512", type=str, help=
 parser.add_argument('-f', '--file', type=str, help='Specifies the data used for training.')
 parser.add_argument('-a', '--alphafile', type=str, help='Specifies the location of the alphabet file.')
 parser.add_argument('-b', '--batchsize', type=int, help='Set the batch size for training, set 0 for all in one batch and one batch per epoch.')
+parser.add_argument('-m', '--memory', type=int, default=1, help='Set to 0 if files should be read from disc, any other number to load into memory.')
 
 args = parser.parse_args()
 
@@ -55,8 +56,8 @@ algorithm = GradientDescent(cost=cross_ent, parameters=cost_model.parameters,
                             on_unused_sources="ignore")
 
 # data
-train_data = H5PYDataset(args.file, which_sets=("train",), load_in_memory=True)
-valid_data = H5PYDataset(args.file, which_sets=("valid",), load_in_memory=True)
+train_data = H5PYDataset(args.file, which_sets=("train",), load_in_memory=args.memory)
+valid_data = H5PYDataset(args.file, which_sets=("valid",), load_in_memory=args.memory)
 
 # see custom_blocks for the transformer
 data_stream = PadAndAddMasks(
