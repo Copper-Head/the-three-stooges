@@ -20,7 +20,7 @@ def mark_seq_len_batch(seq_batch, mask_batch):
 
 
 def mark_word_boundaries_batch(seq_batch, mask_batch):
-    padded_markers = numpy.array([[map_ind_2_chr[ind] for ind in seq] for seq in seq_batch])
+    padded_markers = numpy.array([mark_word_boundaries([map_ind_2_chr[ind] for ind in seq]) for seq in seq_batch])
     padded_markers = padded_markers.flatten(order="C")
     return padded_markers[mask_batch.flatten(order="C") == 1]
 
