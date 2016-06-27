@@ -8,6 +8,7 @@ from blocks.monitoring import aggregation
 from fuel.datasets.hdf5 import H5PYDataset
 from fuel.schemes import SequentialScheme, ShuffledScheme
 from fuel.streams import DataStream
+from numpy import load
 
 from custom_blocks import PadAndAddMasks, EarlyStopping
 from network import *
@@ -21,13 +22,18 @@ parser.add_argument("-e", "--epochs", default=0, type=int, help="Stop after this
                                                                 " run forever until you cancel manually)")
 parser.add_argument("-d", "--dimensions", default="512,512,512", type=str, help="Configure number of layers and dimensions by" +
                                                                                 " just enumerating dimensions (e.g. 100, 100 for" +
-                                                                                " a two-layered network with dims 100)")
+                                                                         " a two-layered network with dims 100)")
+parser.add_argument('-f', '--file', type=str, help='Specifies the data used for training.')
+parser.add_argument('-a', '--alphafile', type=str, help='Specifies the location of the alphabet file.')
+
 args = parser.parse_args()
 
 dimensions = [int(d) for d in args.dimensions.split(',')]
 print('Dimensions:', dimensions)
 
-nkwargs = {'network_type': args.type}
+ix2char = load(args.alphafile).item()
+
+nkwargs = {'network_type': args.type, 'input_dim': len(ix2char), 'reset_states': False}
 if dimensions:
     nkwargs['hidden_dims'] = dimensions
 
@@ -48,8 +54,8 @@ algorithm = GradientDescent(cost=cross_ent, parameters=cost_model.parameters,
                             on_unused_sources="ignore")
 
 # data
-train_data = H5PYDataset("bible.hdf5", which_sets=("train",), load_in_memory=True)
-valid_data = H5PYDataset("bible.hdf5", which_sets=("valid",), load_in_memory=True)
+train_data = H5PYDataset(args.file, which_sets=("train",), load_in_memory=True)
+valid_data = H5PYDataset(args.file, which_sets=("valid",), load_in_memory=True)
 
 # see custom_blocks for the transformer
 data_stream = PadAndAddMasks(
