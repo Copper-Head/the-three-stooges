@@ -96,3 +96,19 @@ def mark_word_boundaries(seq):
         "\n"
     }
     return numpy.array([1 if char in wb else 0 for char in seq])
+
+def mark_char_property(seq, func):
+    """
+    the func arg is supposed to be a str function, e.g.:
+    str.isupper
+    str.islower
+    str.isalnum
+    str.isalpha
+    ...
+
+    A complex lambda expression or wrapper function is also possible, of course
+    :param seq:
+    :param func:
+    :return:
+    """
+    return numpy.array([1 if func(seq[i]) else 0 for i in range(len(seq))])
