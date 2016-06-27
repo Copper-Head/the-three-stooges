@@ -110,6 +110,7 @@ if __name__ == '__main__':
     f.close()
 
     # store alphabet
+    ix2char = {v: k for k, v in char2int.items()}
     alphabet = array(ix2char)
     save(ALPHABET_FILE, alphabet)
 
