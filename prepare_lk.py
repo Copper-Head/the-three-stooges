@@ -74,11 +74,11 @@ if __name__ == '__main__':
     upper_limit = int((len(raw) * 15000000)/500000000)
     min_len = 1500
 
-    batch_size = 10000
+    num_examples = 40000
 
     seqs = []
     p_old = 0
-    step = int(upper_limit/batch_size)
+    step = int(upper_limit / num_examples)
 
     for b in range(0, upper_limit, step):
         seq = raw[b:b+step]
