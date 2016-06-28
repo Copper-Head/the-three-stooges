@@ -33,13 +33,36 @@ lstm_net.set_parameters('seqgen_lstm_512_512_512.pkl')
 map_chr_2_ind = cPickle.load(open("char_to_ind.pkl"))
 map_ind_2_chr = cPickle.load(open("ind_to_char.pkl"))
 
-readouts = VariableFilter(theano_name="readout_readout_output_0")(lstm_net.cost_model.variables)
+for param in lstm_net.cost_model.get_parameter_dict():
+    print param
+
+
+# having a look at connectioneros from the cellsinas to the outputsos
+
+
+# this section deals with prediction probabilities
+"""
+readouts = VariableFilter(theano_name="readout_readout_output_0")(lstm_net.cost_model.variables)[0]
 char_probs = lstm_net.generator.readout.emitter.probs(readouts)
 
-prob_function = function([lstm_net.x], char_probs)
+prob_function = function([lstm_net.x, lstm_net.mask], char_probs)
 
+lord_original = "3:15 And the LORD came."
+lord = [map_chr_2_ind[char] for char in lord_original]
+print lord
+zaza = prob_function([lord], numpy.ones((1, len(lord)), dtype="int8"))[:, 0, :]
+print zaza
+print zaza.shape
+raw_input()
+for (ey, row) in enumerate(zaza):
+    print "PREDICTION PROBABILITIES FOR POSITION", ey, "LETTER", lord_original[ey]
+    for (ind, prob) in enumerate(row):
+        print repr(map_ind_2_chr[ind]), ":", prob
+    print "\n"
+"""
 
-
+# this section of the playground has some fun rides that revolve around various correlation stuff. uncomment to access
+# =)
 """
 sc = StateComputer(lstm_net.cost_model, map_chr_2_ind)
 correlation_dict = dict()
