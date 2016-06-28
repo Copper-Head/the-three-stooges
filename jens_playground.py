@@ -15,6 +15,7 @@ from util import StateComputer, mark_seq_len, mark_word_boundaries
 
 numpy.set_printoptions(precision=8, suppress=True)
 
+
 # TODO get these into util.py, maybe in a prettier form
 def mark_seq_len_batch(seq_batch, mask_batch):
     # get markers separately, then reshape
@@ -30,6 +31,12 @@ def mark_word_boundaries_batch(seq_batch, mask_batch):
     return padded_markers[mask_batch.flatten(order="C") == 1]
 
 
+def mark_letter(seq_batch, mask_batch, letter):
+    padded_markers = 1*numpy.array([map_ind_2_chr[char] == letter for char in seq] for seq in seq_batch)
+    padded_markers = padded_markers.flatten(order="C")
+    return padded_markers[mask_batch.flatten(order="C") == 1]
+
+
 lstm_net = Network(NetworkType.LSTM)
 lstm_net.set_parameters('seqgen_lstm_512_512_512.pkl')
 map_chr_2_ind = cPickle.load(open("char_to_ind.pkl"))
@@ -41,7 +48,8 @@ params = lstm_net.cost_model.get_parameter_values()
 for param in params:
     print param
 
-print params["/sequencegenerator/readout/merge/transform_states#2.W"][:,map_chr_2_ind["O"]]
+# get weights from cells to prediction of "O"
+print params["/sequencegenerator/readout/merge/transform_states#2.W"][:, map_chr_2_ind["O"]]
 
 
 # this section deals with prediction probabilities
@@ -67,7 +75,6 @@ for (ey, row) in enumerate(zaza):
 
 # this section of the playground has some fun rides that revolve around various correlation stuff. uncomment to access
 # =)
-"""
 sc = StateComputer(lstm_net.cost_model, map_chr_2_ind)
 correlation_dict = dict()
 for name in sc.state_var_names:
@@ -97,7 +104,7 @@ try:
         # mask is in shape batch_size x seq_len, so NOT transposed, so it is flattened in C order
         mask_reshaped = mask_batch.flatten(order="C")
         # get marker (very preliminary...)
-        seq_len_correlator = mark_word_boundaries_batch(seq_batch, mask_batch)
+        seq_len_correlator = mark_letter(seq_batch, mask_batch, "L")
         super_marker = numpy.append(super_marker, seq_len_correlator)
         for state_type in state_batch_dict:
             state_batch = state_batch_dict[state_type]
@@ -123,4 +130,3 @@ for state_name in correlation_dict:
     print correlation_dict[state_name]
     print "LARGEST:", max(correlation_dict[state_name]), min(correlation_dict[state_name])
     print "\n\n"
-"""
