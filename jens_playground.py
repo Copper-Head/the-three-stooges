@@ -13,6 +13,8 @@ from network import NetworkType, Network
 from util import StateComputer, mark_seq_len, mark_word_boundaries
 
 
+numpy.set_printoptions(precision=8, suppress=True)
+
 # TODO get these into util.py, maybe in a prettier form
 def mark_seq_len_batch(seq_batch, mask_batch):
     # get markers separately, then reshape
@@ -33,11 +35,13 @@ lstm_net.set_parameters('seqgen_lstm_512_512_512.pkl')
 map_chr_2_ind = cPickle.load(open("char_to_ind.pkl"))
 map_ind_2_chr = cPickle.load(open("ind_to_char.pkl"))
 
-for param in lstm_net.cost_model.get_parameter_dict():
-    print param
-
 
 # having a look at connectioneros from the cellsinas to the outputsos
+params = lstm_net.cost_model.get_parameter_values()
+for param in params:
+    print param
+
+print params["/sequencegenerator/readout/merge/transform_states#2.W"][:,map_chr_2_ind["O"]]
 
 
 # this section deals with prediction probabilities
