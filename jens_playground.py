@@ -32,7 +32,7 @@ def mark_word_boundaries_batch(seq_batch, mask_batch):
 
 
 def mark_letter(seq_batch, mask_batch, letter):
-    padded_markers = 1*numpy.array([map_ind_2_chr[char] == letter for char in seq] for seq in seq_batch)
+    padded_markers = 1*numpy.array([[map_ind_2_chr[char] == letter for char in seq] for seq in seq_batch])
     padded_markers = padded_markers.flatten(order="C")
     return padded_markers[mask_batch.flatten(order="C") == 1]
 
@@ -47,9 +47,6 @@ map_ind_2_chr = cPickle.load(open("ind_to_char.pkl"))
 params = lstm_net.cost_model.get_parameter_values()
 for param in params:
     print param
-
-# get weights from cells to prediction of "O"
-print params["/sequencegenerator/readout/merge/transform_states#2.W"][:, map_chr_2_ind["O"]]
 
 
 # this section deals with prediction probabilities
@@ -76,10 +73,12 @@ for (ey, row) in enumerate(zaza):
 # this section of the playground has some fun rides that revolve around various correlation stuff. uncomment to access
 # =)
 sc = StateComputer(lstm_net.cost_model, map_chr_2_ind)
+# storage for the correlations at the very end
 correlation_dict = dict()
 for name in sc.state_var_names:
     correlation_dict[name] = numpy.zeros(512, dtype=float)  # TODO NOT VERY GENERAL!!!
 
+# get validation data to run over
 valid_data = H5PYDataset("bible.hdf5", which_sets=("valid",), load_in_memory=True)
 data_stream = PadAndAddMasks(
     DataStream.default_stream(dataset=valid_data, iteration_scheme=SequentialScheme(valid_data.num_examples,
@@ -87,12 +86,28 @@ data_stream = PadAndAddMasks(
     produces_examples=False)
 iterator = data_stream.get_epoch_iterator()
 
+# storage for the "supersequences" concatenated over all sequences
 state_super_dict = dict()
 for name in sc.state_var_names:
     state_super_dict[name] = numpy.empty(shape=(0, 512))  # TODO NOT VERY GENERAL AGAIN
 super_marker = numpy.empty(shape=(0,))
 
-prediction_alignment = True
+# storage for the connections from states to output (softmax)
+# this later allows easier connection between each layer's states and the corresponding output connection
+connection_dict = dict()
+standard_name = "/sequencegenerator/readout/merge/transform_states"
+for name in sc.state_var_names:
+    if name[-1] == "2":
+        name_here = standard_name + "#2.W"
+    elif name[-1] == "1":
+        name_here = standard_name + "#1.W"
+    else:
+        name_here = standard_name + ".W"
+    connection_dict[name] = params[name_here][:, map_chr_2_ind["O"]]
+
+# if this is true, each state will be aligned with the character (or event derived from it) that it is used to *predict*
+# if false, each state will be aligned with the character that was most recently read
+prediction_alignment = False
 try:
     while iterator:
         seq_batch, mask_batch = next(iterator)
@@ -112,6 +127,7 @@ try:
                 # "throw away" initial state by rolling array backwards -- hacky, but sidesteps problems with needing
                 # different masks for the sequences (the modified one further above) and for states (the "regular" one)
                 state_batch = numpy.roll(state_batch, shift=-1, axis=0)
+            state_batch *= connection_dict[state_type][None, None, :]
             # note: order of reshape is Fortran because states are "transposed" into seq_len x batch_size x dim
             state_reshaped = state_batch.reshape((state_batch.shape[0]*state_batch.shape[1], state_batch.shape[2]),
                                                  order="F")
