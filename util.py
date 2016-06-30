@@ -87,6 +87,25 @@ def drop_batch_dim(array_with_batch_dim):
     return numpy.squeeze(array_with_batch_dim, axis=1)
 
 
+def pad_mask(batch):
+    maxlen = max(len(example) for example in batch)  # clearer than example.shape[0]
+    # For one, zero-pad the sequences
+    # Also build the mask
+    dims = (len(batch), maxlen)
+    padded_seqs = numpy.zeros(dims, dtype="int32")
+    # mask is int8 because apparently it's converted to float later,
+    # and higher ints would complain about loss of precision
+    mask = numpy.zeros(dims, dtype="int8")
+    for (example_ind, example) in enumerate(batch):
+        # we go through the sequences and simply put them into the padded array;
+        # this will leave 0s wherever the sequence is shorter than maxlen.
+        # similarly, mask will be set to 1 only up to the length of the respective sequence.
+        # note that the transpose is done implicitly by essentially swapping indices
+        padded_seqs[example_ind, :len(example)] = example
+        mask[example_ind, :len(example)] = 1
+    return padded_seqs, mask
+
+
 def mark_seq_len(seq):
     return numpy.arange(len(seq))
 
