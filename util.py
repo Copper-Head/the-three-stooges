@@ -1,3 +1,6 @@
+from collections import defaultdict
+from itertools import chain
+
 import numpy
 from theano import function
 
@@ -108,3 +111,38 @@ def filter_by_threshold(neuron_array, threshold=1):
     Returns: indices of neurons with activations greater than threshold.
     """
     return numpy.nonzero(neuron_array > threshold)
+
+
+def unpack_value_lists(some_dict):
+    """Pairs every key in some_dict with every item in its value (list)."""
+    return ((key, v) for key in some_dict for v in some_dict[key])
+
+
+def dependencies(dep_graph):
+    """Turns nltk.parse.DependencyGraph into dict keyed by dependency labels.
+
+    Returns dict that maps dependency labels to lists.
+    Each list consists of pairs of (head word index, dependent word index).
+    Here's an example entry:
+    'DET' : [(9, 0), (4, 5)]
+    """
+    dep_dict = defaultdict(list)
+    for index in dep_graph.nodes:
+        node = dep_graph.nodes[index]
+        for dep_label, dep_index in unpack_value_lists(node['deps']):
+            dep_dict[dep_label].append((index - 1, dep_index - 1))
+    return dep_dict
+
+
+def simple_mark_dependency(dep_dict, dep_label):
+    """Simple marking function for dependencies.
+
+    Takes dictionary of dependencies and dependency label.
+    Constructs a numpy array of zeros and marks with 1 the positions of words
+    that take part in the dependency.
+    """
+    indeces = dep_dict.nodes[dep_label]
+    unique_index_list = list(set(chain.from_iterable(indeces)))
+    marked = numpy.zeros(len(dep_dict.nodes) - 1)
+    marked[unique_index_list] = 1
+    return marked
