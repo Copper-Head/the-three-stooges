@@ -8,7 +8,9 @@ def split_hdf5_file(file_path, train_data, val_data, varlen=False):
     """Generates a split HDF5 file.
     Args:
     file_path -> string, filepath to save the dataset
-    train_data -> numpy array, training data
+    train_data -> numpy array 2D. first dim is over number of sequences,
+    second dim (which can vary) is over sequence length.
+    In theory can also be a list of numpy arrays.
     val_data -> same as train_data, but validation.
     varlen -> boolean flag indicates whether or not data has variable length.
     """
@@ -20,7 +22,7 @@ def split_hdf5_file(file_path, train_data, val_data, varlen=False):
 
     # We have to combine these as lists in order to handle variable len data
     all_data = list(train_data) + list(val_data)
-    split_at = train_data.shape[0]
+    split_at = len(train_data)
     data_size = len(all_data)
 
     with h5py.File(file_path, mode="w") as f:
