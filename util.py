@@ -105,6 +105,14 @@ def pad_mask(batch):
     return padded_seqs, mask
 
 
+def select_positions(aux_var_dict, indx=1):
+    """Select certain indices from auxiliary var dictionary.
+
+    Note that indx can be any slicing/indexing construct valid in numpy.
+    """
+    return {var_name: var_val[indx] for var_name, var_val in aux_var_dict.items()}
+
+
 def mark_seq_len(seq):
     return numpy.arange(len(seq))
 
