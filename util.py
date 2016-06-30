@@ -77,8 +77,7 @@ class StateComputer(object):
 
 
 def drop_batch_dim(array_with_batch_dim):
-    """
-    When reading in one sentence at a time the batch dimension is superflous.
+    """When reading in one sentence at a time the batch dimension is superflous.
 
     Using numpy.squeeze we get rid of it. This relies on two assumptions:
     - that dimension being "1"
