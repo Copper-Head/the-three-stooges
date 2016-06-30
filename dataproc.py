@@ -3,7 +3,7 @@ import h5py
 
 from fuel.datasets import H5PYDataset
 
-from nltk.corpus import DependencyGraph
+from nltk.parse import DependencyGraph
 
 
 def split_hdf5_file(file_path, train_data, val_data, varlen=False):
