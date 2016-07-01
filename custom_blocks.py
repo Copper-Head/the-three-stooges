@@ -7,6 +7,8 @@ from blocks.monitoring.evaluators import DatasetEvaluator
 from blocks.serialization import secure_dump, dump_and_add_to_dump
 from fuel.transformers import Transformer
 
+from util import pad_mask
+
 
 logger = logging.getLogger(__name__)  # no idea what this is dude
 SAVED_TO = "saved_to"
@@ -30,24 +32,13 @@ class PadAndAddMasks(Transformer):
         """
         return "character_seqs", "seq_mask"
 
-    def transform_batch(self, batch):
-        maxlen = max(example.shape[0] for example in batch[0])
-        # For one, zero-pad the sequences
-        # Also build the mask
-        # Note that, because the transformer doesn't do enough stuff yet, the sequences (batch[0]) are also transposed
-        # to go from one-sequence-per-row (the way it's stored) to the weird Blocks RNN format (one-sequence-per-column)
-        padded_seqs = numpy.zeros((batch[0].shape[0], maxlen), dtype="int32")
-        # mask is int8 because apparently it's converted to float later, and higher ints would complain about loss of
-        # precision
-        mask = numpy.zeros((batch[0].shape[0], maxlen), dtype="int8")
-        for (example_ind, example) in enumerate(batch[0]):
-            # we go through the sequences and simply put them into the padded array; this will leave 0s wherever the
-            # sequence is shorter than maxlen. similarly, mask will be set to 1 only up to the length of the respective
-            # sequence
-            # note that the transpose is done implicitly by essentially swapping indices
-            padded_seqs[example_ind, :len(example)] = example
-            mask[example_ind, :len(example)] = 1
-        return padded_seqs, mask
+    def transform_batch(self, batch_sources):
+        """Implements transformer hook to add padding and masks to datastream.
+
+        batch_sources is a tuple containing all the sources from datastream.
+        In our case it's just one source, so we handle it accordingly.
+        """
+        return pad_mask(batch_sources[0])
 
 
 class LSTMGateBias(NdarrayInitialization):

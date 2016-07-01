@@ -1,3 +1,6 @@
+from collections import defaultdict
+from itertools import chain
+
 import numpy
 from theano import function
 
@@ -74,14 +77,40 @@ class StateComputer(object):
 
 
 def drop_batch_dim(array_with_batch_dim):
-    """
-    When reading in one sentence at a time the batch dimension is superflous.
+    """When reading in one sentence at a time the batch dimension is superflous.
 
     Using numpy.squeeze we get rid of it. This relies on two assumptions:
     - that dimension being "1"
     - that being the second dimension (shape[1])
     """
     return numpy.squeeze(array_with_batch_dim, axis=1)
+
+
+def pad_mask(batch):
+    maxlen = max(len(example) for example in batch)  # clearer than example.shape[0]
+    # For one, zero-pad the sequences
+    # Also build the mask
+    dims = (len(batch), maxlen)
+    padded_seqs = numpy.zeros(dims, dtype="int32")
+    # mask is int8 because apparently it's converted to float later,
+    # and higher ints would complain about loss of precision
+    mask = numpy.zeros(dims, dtype="int8")
+    for (example_ind, example) in enumerate(batch):
+        # we go through the sequences and simply put them into the padded array;
+        # this will leave 0s wherever the sequence is shorter than maxlen.
+        # similarly, mask will be set to 1 only up to the length of the respective sequence.
+        # note that the transpose is done implicitly by essentially swapping indices
+        padded_seqs[example_ind, :len(example)] = example
+        mask[example_ind, :len(example)] = 1
+    return padded_seqs, mask
+
+
+def select_positions(aux_var_dict, indx=1):
+    """Select certain indices from auxiliary var dictionary.
+
+    Note that indx can be any slicing/indexing construct valid in numpy.
+    """
+    return {var_name: var_val[indx] for var_name, var_val in aux_var_dict.items()}
 
 
 def mark_seq_len(seq):
@@ -123,3 +152,38 @@ def filter_by_threshold(neuron_array, threshold=1):
     Returns: indices of neurons with activations greater than threshold.
     """
     return numpy.nonzero(neuron_array > threshold)
+
+
+def unpack_value_lists(some_dict):
+    """Pairs every key in some_dict with every item in its value (list)."""
+    return ((key, v) for key in some_dict for v in some_dict[key])
+
+
+def dependencies(dep_graph):
+    """Turns nltk.parse.DependencyGraph into dict keyed by dependency labels.
+
+    Returns dict that maps dependency labels to lists.
+    Each list consists of pairs of (head word index, dependent word index).
+    Here's an example entry:
+    'DET' : [(9, 0), (4, 5)]
+    """
+    dep_dict = defaultdict(list)
+    for index in dep_graph.nodes:
+        node = dep_graph.nodes[index]
+        for dep_label, dep_index in unpack_value_lists(node['deps']):
+            dep_dict[dep_label].append((index - 1, dep_index - 1))
+    return dep_dict
+
+
+def simple_mark_dependency(dep_dict, dep_label):
+    """Simple marking function for dependencies.
+
+    Takes dictionary of dependencies and dependency label.
+    Constructs a numpy array of zeros and marks with 1 the positions of words
+    that take part in the dependency.
+    """
+    indeces = dep_dict.nodes[dep_label]
+    unique_index_list = list(set(chain.from_iterable(indeces)))
+    marked = numpy.zeros(len(dep_dict.nodes) - 1)
+    marked[unique_index_list] = 1
+    return marked

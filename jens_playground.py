@@ -70,6 +70,10 @@ for (ey, row) in enumerate(zaza):
     print "\n"
 """
 
+# define a function that gets the overall "sum of scores" at a given time step
+readouts = VariableFilter(theano_name="readout_readout_output_0")(lstm_net.cost_model.variables)[0]
+score_function = function([lstm_net.x, lstm_net.mask], readouts.sum(axis=2))
+
 # this section of the playground has some fun rides that revolve around various correlation stuff. uncomment to access
 # =)
 sc = StateComputer(lstm_net.cost_model, map_chr_2_ind)
@@ -121,6 +125,8 @@ try:
         # get marker (very preliminary...)
         seq_len_correlator = mark_letter(seq_batch, mask_batch, "L")
         super_marker = numpy.append(super_marker, seq_len_correlator)
+        # TESTING total score thingy -- should be 2D, seq_len x batch_size
+        overall_scores = score_function(seq_batch, mask_batch)
         for state_type in state_batch_dict:
             state_batch = state_batch_dict[state_type]
             if not prediction_alignment:
@@ -128,6 +134,7 @@ try:
                 # different masks for the sequences (the modified one further above) and for states (the "regular" one)
                 state_batch = numpy.roll(state_batch, shift=-1, axis=0)
             state_batch *= connection_dict[state_type][None, None, :]
+            state_batch *= overall_scores[:, :, None]
             # note: order of reshape is Fortran because states are "transposed" into seq_len x batch_size x dim
             state_reshaped = state_batch.reshape((state_batch.shape[0]*state_batch.shape[1], state_batch.shape[2]),
                                                  order="F")

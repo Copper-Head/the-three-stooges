@@ -3,6 +3,8 @@ import h5py
 
 from fuel.datasets import H5PYDataset
 
+from nltk.parse import DependencyGraph
+
 
 def split_hdf5_file(file_path, train_data, val_data, varlen=False):
     """Generates a split HDF5 file.
@@ -45,3 +47,11 @@ def random_train_val_split(data, val_size):
     val_set = data[val_indices]
     train_set = np.delete(data, val_indices, 0)
     return (train_set, val_set)
+
+
+def load_tab_delim_hdt(file_path):
+    """Given a filepath returns a list of nltk.parse.DependencyGraph objects.
+
+    The file is expected to be in Conll or MALT-Tab format.
+    """
+    return DependencyGraph.load(file_path, cell_separator="\t", top_relation_label="S")
