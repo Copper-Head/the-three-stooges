@@ -78,7 +78,7 @@ class EarlyStopping(SimpleExtension, MonitoringExtension):
     set a maximum on the number of epochs we want to train for, in addition to the early stopping.
     """
     def __init__(self, variables, data_stream, path, tolerance, updates=None, parameters=None, save_separately=None,
-                 save_main_loop=True, use_cpickle=False, **kwargs):
+                 save_main_loop=True, use_cpickle=False, strict_mode=True, **kwargs):
         if len(variables) != 1:
             raise ValueError("Please specify exactly one variable (packed in a list)!")
         # DatastreamMonitoring part
@@ -99,20 +99,32 @@ class EarlyStopping(SimpleExtension, MonitoringExtension):
         self.n_since_improvement = 0
         self.last_value = float("inf")
         self.best_value = float("inf")
+        self.strict_mode = strict_mode
 
     def do(self, callback_name, *args):
         value_dict = self.do_monitoring()
-        # see if we have an improvement from the last measure
+        # see if we have an improvement from the best (or last) measure
+        # check out this awesome code duplication
         current_value = value_dict.values()[0]
-        if current_value < self.last_value:
-            # if so, we reset our counter of how-long-since-improvement
-            logger.info("Got an improvement from the last measure; tolerance reset.")
-            self.n_since_improvement = 0
+        if self.strict_mode:
+            if current_value < self.best_value:
+                logger.info("Got an improvement over best measure; tolerance reset.")
+                self.n_since_improvement = 0
+            else:
+                self.n_since_improvement += 1
+                if self.tolerance - self.n_since_improvement >= 0:
+                    logger.info("No improvement over best measure! Tolerating " +
+                                str(self.tolerance - self.n_since_improvement) + " more...")
         else:
-            self.n_since_improvement += 1
-            if self.tolerance - self.n_since_improvement >= 0:
-                logger.info("No improvement since the last measure! Tolerating " +
-                            str(self.tolerance - self.n_since_improvement) + " more...")
+            if current_value < self.last_value:
+                # if so, we reset our counter of how-long-since-improvement
+                logger.info("Got an improvement over last measure; tolerance reset.")
+                self.n_since_improvement = 0
+            else:
+                self.n_since_improvement += 1
+                if self.tolerance - self.n_since_improvement >= 0:
+                    logger.info("No improvement since the last measure! Tolerating " +
+                                str(self.tolerance - self.n_since_improvement) + " more...")
         self.last_value = current_value
         # if we have an improvement over the best yet, we store that and make a checkpoint
         if current_value < self.best_value:
