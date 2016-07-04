@@ -134,7 +134,7 @@ try:
                 # different masks for the sequences (the modified one further above) and for states (the "regular" one)
                 state_batch = numpy.roll(state_batch, shift=-1, axis=0)
             state_batch *= connection_dict[state_type][None, None, :]
-            state_batch *= overall_scores[:, :, None]
+            state_batch /= overall_scores[:, :, None]
             # note: order of reshape is Fortran because states are "transposed" into seq_len x batch_size x dim
             state_reshaped = state_batch.reshape((state_batch.shape[0]*state_batch.shape[1], state_batch.shape[2]),
                                                  order="F")
