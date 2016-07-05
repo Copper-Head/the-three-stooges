@@ -64,14 +64,20 @@ class StateComputer(object):
         flattened_aux_vars = map(drop_batch_dim, computed_aux_vars)
         return dict(zip(self.state_var_names, flattened_aux_vars))
 
-    def read_sequence_batch(self, sequences, mask):
+    def read_sequence_batch(self, sequences, mask=None):
         """
         Basically read_single_sequence but for a whole batch to speed things up.
 
-        Note that, because I find it unlikely that someone wants to pass in a batch of strings, this only works with
-        sequences of integers atm. That is, the way the data is stored on disk. Mask needs to be computed beforehand
-        (easy via transformer).
+        Note that, because I find it unlikely that someone wants to pass in
+        a batch of strings, this only works with sequences of integers atm.
+        That is, the way the data is stored on disk.
+        Mask can be computed beforehand, in which case sequences arg should
+        be padded.
+        If no mask is passed, we use pad_mask function to create it (and padding).
         """
+        if mask is None:
+            # tries to pad sequences as well
+            sequences, mask = pad_mask(sequences)
         computed_states = self.func(sequences, mask)
         return dict(zip(self.state_var_names, computed_states))
 
