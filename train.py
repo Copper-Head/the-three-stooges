@@ -1,4 +1,5 @@
 import argparse
+import pickle
 
 from blocks.algorithms import GradientDescent, Adam, CompositeRule, StepClipping
 from blocks.extensions import Timing, Printing, FinishAfter, ProgressBar
@@ -8,7 +9,6 @@ from blocks.monitoring import aggregation
 from fuel.datasets.hdf5 import H5PYDataset
 from fuel.schemes import SequentialScheme, ShuffledScheme
 from fuel.streams import DataStream
-from numpy import load
 
 from custom_blocks import PadAndAddMasks, EarlyStopping
 from network import *
@@ -33,7 +33,7 @@ args = parser.parse_args()
 dimensions = [int(d) for d in args.dimensions.split(',')]
 print('Dimensions:', dimensions)
 
-ix2char = load(args.alphafile).item()
+ix2char = pickle.load(open(args.alphafile))
 
 nkwargs = {'network_type': args.type, 'input_dim': len(ix2char)}
 if dimensions:
