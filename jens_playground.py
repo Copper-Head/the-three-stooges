@@ -37,7 +37,7 @@ def mark_letter(seq_batch, mask_batch, letter):
     return padded_markers[mask_batch.flatten(order="C") == 1]
 
 
-lstm_net = Network(NetworkType.SIMPLE_RNN)
+lstm_net = Network(NetworkType.SIMPLE_RNN, hidden_dims=[1024])
 lstm_net.set_parameters('seqgen_simple_1024.pkl')
 map_chr_2_ind = cPickle.load(open("char_to_ind.pkl"))
 map_ind_2_chr = cPickle.load(open("ind_to_char.pkl"))
