@@ -96,7 +96,6 @@ class Network(object):
                 init_states.append(init_state)
                 init_state.name += '#'+str(id)
                 id += 1
-        self.initial_states = init_states
 
     @DeprecationWarning
     def register_states(self, states_dict):
