@@ -159,7 +159,7 @@ def unpack_value_lists(some_dict):
     return ((key, v) for key in some_dict for v in some_dict[key])
 
 
-def dependencies(dep_graph):
+def _dependencies(dep_graph):
     """Turns nltk.parse.DependencyGraph into dict keyed by dependency labels.
 
     Returns dict that maps dependency labels to lists.
@@ -175,15 +175,62 @@ def dependencies(dep_graph):
     return dep_dict
 
 
-def simple_mark_dependency(dep_dict, dep_label):
+def simple_mark_dependency(dep_graph, dep_label):
     """Simple marking function for dependencies.
 
     Takes dictionary of dependencies and dependency label.
     Constructs a numpy array of zeros and marks with 1 the positions of words
     that take part in the dependency.
     """
-    indeces = dep_dict.nodes[dep_label]
+    dep_dict = _dependencies(dep_graph)
+    indeces = dep_dict[dep_label]
     unique_index_list = list(set(chain.from_iterable(indeces)))
-    marked = numpy.zeros(len(dep_dict.nodes) - 1)
+    marked = numpy.zeros(len(dep_dict) - 1)
     marked[unique_index_list] = 1
+    return marked
+
+
+def mark_dependency(dep_graph, dep_label, prior_long=True, marking_fun=lambda x, ix: numpy.ones(len(ix)), **fun_kwargs):
+    """
+    This function marks a dependency like simple_mark_dependency, so head and dependent. But in addition
+    the tokens between head and dependent are marked as well. The marking can be a simple sequence of 1s,
+    which is the default, or a sequence given by a marking function. The marking function will be called
+    for each sequence of tokens from head to dependent (or vice versa) SEPARATELY. The priorities for sequences
+    of tokens including smaller sequences of tokens that also show the same dependency as in
+            ______________________
+           /        __            \
+          /       /   \            \
+        Das auf dem Berg stehende Haus
+
+    is handle by :param prior_long:, which is True by default causing that the given sequence will be treated
+    as a whole and there will be no marking call for the included. If you put :param prior_long: on False, "dem Berg"
+    would be marked before the whole sequence.
+    :param dep_graph:
+    :param dep_label:
+    :param prior_long:
+    :param marking_fun:
+    :param fun_args:
+    :param fun_kwargs:
+    :return:
+    """
+    raw_indices = {frozenset(range(sorted(tpl)[0], sorted(tpl)[1]+1)) for tpl in _dependencies(dep_graph)[dep_label]}
+    filtered_indices = []
+    if prior_long:
+        for ixset in raw_indices:
+            diffset = raw_indices.difference({ixset})
+            if not [e for e in diffset if ixset.issubset(e)]:
+                filtered_indices.append(sorted(list(ixset)))
+    else:
+        # create discontinuous and coniuous spans of indexes
+        for ixset in raw_indices:
+            diffset = raw_indices.difference({ixset})
+            app_ixs = list(ixset)
+            for subset in [e for e in diffset if e.issubset(ixset)]:
+                for i in subset:
+                    app_ixs.remove(i)
+            filtered_indices.append(sorted(app_ixs))
+
+    marked = numpy.zeros(len(dep_graph.nodes)-1)
+    for ixlist in filtered_indices:
+        marked[ixlist,] = marking_fun(marked, ixlist, **fun_kwargs)
     return marked

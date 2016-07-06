@@ -80,22 +80,11 @@ class Network(object):
         self.generator = generator
         self.hidden_dims = hidden_dims
         self.transitions = rnns
-        init_states = []
-        id = 0
-        for rnn in rnns:  # note: the initial states collected here might not be the right ones
-            init_state = None
-            i = 0
-            while i<len(rnn.parameters) and not init_state:
-                if rnn.parameters[i].name == 'initial_state':
-                    init_state = rnn.parameters[i]
-                i += 1
-            if init_state:
-                init_states.append(init_state)
-                init_state.name += '#'+str(id)
-                id += 1
-        self.initial_states = init_states
 
     def set_parameters(self, model_file):
         with open(model_file, 'rb') as f:
             params = load_parameters(f)
+        critical_keys = set()
+        params['/sequencegenerator/with_fake_attention/transition/layer#0.initial_state'] = params['/sequencegenerator/with_fake_attention/transition/layer#0.initial_state#0']
+        params.pop('/sequencegenerator/with_fake_attention/transition/layer#0.initial_state#0')
         self.cost_model.set_parameter_values(params)
