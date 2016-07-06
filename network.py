@@ -9,6 +9,7 @@ from theano import tensor
 
 from martin_test_module import NoResetSimpleRecurrent
 
+
 class NetworkType(object):
     """
     This enum represents the three types of networks we're looking at.
@@ -27,6 +28,7 @@ class NetworkType(object):
             return GatedRecurrent
         else:
             raise ValueError("Invalid RNN type specified!")
+
 
 class Network(object):
     """
@@ -88,13 +90,13 @@ class Network(object):
         for rnn in rnns:
             init_state = None
             i = 0
-            while i<len(rnn.parameters) and not init_state:
+            while i < len(rnn.parameters) and not init_state:
                 if rnn.parameters[i].name == 'initial_state':
                     init_state = rnn.parameters[i]
                 i += 1
             if init_state:
                 init_states.append(init_state)
-                init_state.name += '#'+str(id)
+                init_state.name += '#' + str(id)
                 id += 1
 
     @DeprecationWarning
