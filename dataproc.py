@@ -8,7 +8,6 @@ from nltk.parse import DependencyGraph
 
 def split_hdf5_file(file_path, train_data, val_data, varlen=False):
     """Generates a split HDF5 file.
-
     Args:
     file_path -> string, filepath to save the dataset
     train_data -> numpy array 2D. first dim is over number of sequences,
@@ -39,7 +38,6 @@ def split_hdf5_file(file_path, train_data, val_data, varlen=False):
 
 def random_train_val_split(data, val_size):
     """Splits data into training and validation sets randomly.
-
     Expets a numpy array `data` argument and an int `val_size` specifying how big
     the validation size should be.
     Returns tuple (training_data, validation_data)

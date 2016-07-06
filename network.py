@@ -7,9 +7,6 @@ from blocks.model import Model
 from blocks.serialization import load_parameters
 from theano import tensor
 
-from martin_test_module import NoResetSimpleRecurrent
-
-
 class NetworkType(object):
     """
     This enum represents the three types of networks we're looking at.
@@ -19,9 +16,9 @@ class NetworkType(object):
     LSTM = 'lstm'
 
     @staticmethod
-    def get_brick(network_type, reset_states=True):
+    def get_brick(network_type):
         if network_type == NetworkType.SIMPLE_RNN:
-            return SimpleRecurrent if reset_states else NoResetSimpleRecurrent
+            return SimpleRecurrent
         elif network_type == NetworkType.LSTM:
             return LSTM
         elif network_type == NetworkType.GRU:
@@ -45,17 +42,16 @@ class Network(object):
     generator -- the blocks SequenceGenerator object
     hidden_dims -- the dimensions of the hidden layers
     """
-    def __init__(self, network_type=NetworkType.SIMPLE_RNN, input_dim_file='onehot_size.npy', input_dim=0, hidden_dims=[512, 512, 512], embed_dim=30, reset_states=True):
+    def __init__(self, network_type, input_dim, hidden_dims=[512, 512, 512], embed_dim=30):
         char_seq = tensor.imatrix("character_seqs")
         mask = tensor.matrix("seq_mask")
-        input_dim = input_dim if input_dim else numpy.load(input_dim_file)
         output_dim = input_dim
 
         # Stack of three RNNs (if this is too much we can of course use a single layer for the beginning).
         # All RNNs are called "layer" so we don't need to use different by-name-filters for different rnn types later
         # when sampling.
         # Note that RecurrentStack automatically appends #0, #1 etc. to the names.
-        brick = NetworkType.get_brick(network_type, reset_states)
+        brick = NetworkType.get_brick(network_type)
 
         rnns = [brick(dim=dim, activation=Tanh(), name='layer') for dim in hidden_dims]
         stacked_rnn = RecurrentStack(transitions=rnns, skip_connections=True, name="transition")
@@ -85,29 +81,10 @@ class Network(object):
         self.generator = generator
         self.hidden_dims = hidden_dims
         self.transitions = rnns
-        init_states = []
-        id = 0
-        for rnn in rnns:
-            init_state = None
-            i = 0
-            while i < len(rnn.parameters) and not init_state:
-                if rnn.parameters[i].name == 'initial_state':
-                    init_state = rnn.parameters[i]
-                i += 1
-            if init_state:
-                init_states.append(init_state)
-                init_state.name += '#' + str(id)
-                id += 1
 
-    @DeprecationWarning
-    def register_states(self, states_dict):
-        try:
-            for i in range(len(states_dict)):
-                self.transitions[i].register_state(states_dict[i])
-        except AttributeError:
-            raise NotImplementedError('Transition {} not compatible with registering states.'.format(self.transitions[i]))  # FIXME Look for better error type later
 
     def set_parameters(self, model_file):
         with open(model_file, 'rb') as f:
             params = load_parameters(f)
         self.cost_model.set_parameter_values(params)
+

@@ -13,8 +13,8 @@ from blocks.monitoring.evaluators import AggregationBuffer
 from fuel.datasets.hdf5 import H5PYDataset
 from fuel.schemes import SequentialScheme, ShuffledScheme
 from fuel.streams import DataStream
-from numpy import load
-from theano import function
+from numpy import load, array, ones, all, zeros
+from theano import function, shared
 
 from custom_blocks import PadAndAddMasks, EarlyStopping
 from network import *
@@ -34,10 +34,15 @@ parser.add_argument("-d", "--dimensions", default="512,512,512", type=str, help=
                                                                                 " a two-layered network with dims 100)")
 args = parser.parse_args()
 
+char2ix = load(ALPHABET_FILE).item()
+ix2char = {}
+for k, v in char2ix.items():
+    ix2char[v] = k
+
 dimensions = [int(d) for d in args.dimensions.split(',')]
 print('Dimensions:', dimensions)
 
-nkwargs = {'network_type': args.type, 'reset_states': False}
+nkwargs = {'network_type': args.type, 'reset_states': False, 'input_dim': len(ix2char)}
 if dimensions:
     nkwargs['hidden_dims'] = dimensions
 
@@ -49,7 +54,7 @@ cost_model = network.cost_model
 
 # do init_state stuff
 initial_states = network.initial_states
-init_state_2 = initial_states[2]
+#init_state_2 = initial_states[2]
 
 # data
 train_data = H5PYDataset(DATA_FILE_LOC, which_sets=("train",), load_in_memory=True)
@@ -66,15 +71,13 @@ data_stream_valid = PadAndAddMasks(DataStream.default_stream(dataset=valid_data,
 #   detect exploding gradient problems
 # - validation cost once every epoch
 
-
-char2ix = load(ALPHABET_FILE).item()
-ix2char = {}
-for k, v in char2ix.items():
-    ix2char[v] = k
-
 sc = StateComputer(network.cost_model, ix2char)
-state_to_compare = list(filter(lambda x: x.name == 'sequencegenerator_cost_matrix_states#2', sc.state_variables))[0]  # notice: python2 filter seems to return a list, but anyway
-states_to_compare = list(filter(lambda x: 'sequencegenerator_cost_matrix_states' in x.name, sc.state_variables))
+
+# FIXME too complicated and hard-coded
+state_to_compare_0 = list(filter(lambda x: x.name == 'sequencegenerator_cost_matrix_states', sc.state_variables))[0]
+state_to_compare_1 = list(filter(lambda x: x.name == 'sequencegenerator_cost_matrix_states#1', sc.state_variables))[0]
+state_to_compare_2 = list(filter(lambda x: x.name == 'sequencegenerator_cost_matrix_states#2', sc.state_variables))[0]  # notice: python2 filter seems to return a list, but anyway
+
 
 # The thing that I feed into the parameters argument I copied from some blocks-examples thing. the good old computation
 # graph and then cg.parameters should work as well.
@@ -86,38 +89,121 @@ algorithm = GradientDescent(cost=cross_ent, parameters=cost_model.parameters,
                             step_rule=CompositeRule(components=[StepClipping(threshold=args.clipping), Adam()]),
                             on_unused_sources="ignore")
 
-#OverrideStateReset(OrderedDict({init_state_2 : state_to_compare[0][-1]}))
 
-"""
-aggr = AggregationBuffer(variables=[state_to_compare], use_take_last=True)
-aggr.initialize_aggregators()
+aggr_0 = AggregationBuffer(variables=[state_to_compare_0], use_take_last=True)
+aggr_0.initialize_aggregators()
+check_value_0 = shared(zeros((network.transitions[-1].dim), dtype='float32'))  # TODO: is it necessary or recommendable to add these to the computation graph is constants or sth like that?
 
-def modifier_function(iterations_done, old_value):
-    values = aggr.get_aggregated_values()
-    new_value = values[state_to_compare.name][0][-1]
-    print(iterations_done, 'iterations done.\nRESETTING INIT_STATE_VAL FROM', old_value, 'TO', new_value)
-    aggr.initialize_aggregators()  # TODO what's the purpose of that? I observed them do it in the monitoring extensions after every request
+def modifier_function_0(iterations_done, old_value):
+    """
+    Note about this method: The accumulator seems to get the state vector in random order
+    :param iterations_done:
+    :param old_value:
+    :return:
+    """
+    values = aggr_0.get_aggregated_values()
+    new_value = values[state_to_compare_0.name]
+    aggr_0.initialize_aggregators()  # TODO what's the purpose of that? I observed them do it in the monitoring extensions after every request
+    #print('0:OLD ..:', old_value)
+    #print('0:NEW in:', new_value[-1][0], new_value[0][0], sep='\n')
+    #print('0:CHECK:', aggr_0.check_value.get_value(), sep='\n')
+    value_a = new_value[-1][0]
+    value_b = new_value[0][0]
+    if all(check_value_0.get_value() == zeros((1, old_value.size), dtype='float32')):
+        check_value_0.set_value(old_value)
+    new_value = value_a if all(value_a != check_value_0) else value_b
+    check_value_0.set_value(new_value)
+    #print('0:CHOICE:', new_value, sep='\n')
     return new_value
 
-# TODO: need to figure out how to influence the point in time when this is actually executed
-init_state_modifier = SharedVariableModifier(initial_states[2], function=modifier_function, after_batch=True)
-"""
+aggr_1 = AggregationBuffer(variables=[state_to_compare_1], use_take_last=True)
+aggr_1.initialize_aggregators()
+check_value_1 = shared(zeros((network.transitions[-1].dim), dtype='float32'))
+
+def modifier_function_1(iterations_done, old_value):
+    """
+    Note about this method: The accumulator seems to get the state vector in random order
+    :param iterations_done:
+    :param old_value:
+    :return:
+    """
+    values = aggr_1.get_aggregated_values()
+    new_value = values[state_to_compare_1.name]
+    aggr_1.initialize_aggregators()  # TODO what's the purpose of that? I observed them do it in the monitoring extensions after every request
+    #print('1:OLD ..:', old_value)
+    #print('1:NEW in:', new_value[-1][0], new_value[0][0], sep='\n')
+    #print('1:CHECK:', aggr_1.check_value.get_value(), sep='\n')
+    value_a = new_value[-1][0]
+    value_b = new_value[0][0]
+    if all(check_value_1.get_value() == zeros((1, old_value.size), dtype='float32')):
+        check_value_1.set_value(old_value)
+    new_value = value_a if all(value_a != check_value_1) else value_b
+    check_value_1.set_value(new_value)
+    #print('1:CHOICE:', new_value, sep='\n')
+    return new_value
+
+aggr_2 = AggregationBuffer(variables=[state_to_compare_2], use_take_last=True)
+aggr_2.initialize_aggregators()
+check_value_2 = shared(zeros((network.transitions[-1].dim), dtype='float32'))
+
+def modifier_function_2(iterations_done, old_value):
+    """
+    Note about this method: The accumulator seems to get the state vector in random order
+    :param iterations_done:
+    :param old_value:
+    :return:
+    """
+    values = aggr_2.get_aggregated_values()
+    new_value = values[state_to_compare_2.name]
+    aggr_2.initialize_aggregators()  # TODO what's the purpose of that? I observed them do it in the monitoring extensions after every request
+    #print('2:OLD ..:', old_value)
+    #print('2:NEW in:', new_value[-1][0], new_value[0][0], sep='\n')
+    #print('2:CHECK:', check_value_2.get_value(), sep='\n')
+    value_a = new_value[-1][0]
+    value_b = new_value[0][0]
+    if all(check_value_2.get_value() == zeros((1, old_value.size), dtype='float32')):
+        check_value_2.set_value(old_value)
+    new_value = value_a if all(value_a != check_value_2) else value_b
+    check_value_2.set_value(new_value)
+    #print('2:CHOICE:', new_value, sep='\n')
+    return new_value
+
+
+
+# FIXME hard-coded for 3-layered LSTM
+modifier_functions = {
+    network.transitions[0].name : modifier_function_0,
+    network.transitions[1].name : modifier_function_1,
+    network.transitions[2].name : modifier_function_2
+}
+
+#init_state_modifier = SharedVariableModifier(network.transitions[-1].initial_state_, function=modifier_function, after_batch=True)
+init_state_modifiers = [SharedVariableModifier(trans.initial_state_, function=modifier_functions[trans.name], after_batch=True) for trans in network.transitions]
+
 
 #state_function = function([state_to_compare], initial_states[2], updates=[(init_state_2, state_to_compare[0][-1])]) #TODO look at this, this is how it basically works!
 
 monitor_grad = TrainingDataMonitoring(variables=[cross_ent, aggregation.mean(algorithm.total_gradient_norm),
-                                                 aggregation.mean(algorithm.total_step_norm)]+initial_states+[state_to_compare], after_epoch=True,
-                                      prefix="training")
+                                                 aggregation.mean(algorithm.total_step_norm)],  #+initial_states+[state_to_compare_1],
+                                      prefix="training", after_batch=True)
 
 early_stopping = EarlyStopping(variables=[cross_ent], data_stream=data_stream_valid,
                                path="seqgen_" + args.type + "_" + "_".join([str(d) for d in network.hidden_dims]) + ".pkl",
                                tolerance=4, prefix="validation")
 
-main_loop = MainLoop(algorithm=algorithm, data_stream=data_stream, model=cost_model,
-                     extensions=[monitor_grad, FinishAfter(after_n_epochs=args.epochs), ProgressBar(),
-                                 Timing(), Printing()])
+prkwargs = {
+    #'after_batch':True  # use this for prints after every batch
+}
 
-print('UPDATES:', main_loop.algorithm.updates)
+main_loop = MainLoop(algorithm=algorithm, data_stream=data_stream, model=cost_model,
+                     extensions=[monitor_grad, early_stopping, FinishAfter(after_n_epochs=args.epochs), ProgressBar(),
+                                 Timing(), Printing(**prkwargs)]+init_state_modifiers)
+
+main_loop.algorithm.add_updates(aggr_0.accumulation_updates)
+main_loop.algorithm.add_updates(aggr_1.accumulation_updates)
+main_loop.algorithm.add_updates(aggr_2.accumulation_updates)
+
+
 
 # remove update
 # updates = main_loop.algorithm.updates
