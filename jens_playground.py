@@ -70,10 +70,6 @@ score_function = function([lstm_net.x, lstm_net.mask], readouts.sum(axis=2))
 # this section of the playground has some fun rides that revolve around various correlation stuff. uncomment to access
 # =)
 sc = StateComputer(lstm_net.cost_model, map_chr_2_ind)
-# storage for the correlations at the very end
-correlation_dict = dict()
-for name in sc.state_var_names:
-    correlation_dict[name] = numpy.zeros(lstm_net.hidden_dims[0], dtype="float32")
 
 # get validation data to run over
 valid_data = H5PYDataset("bible.hdf5", which_sets=("valid",), load_in_memory=True)
@@ -122,15 +118,20 @@ try:
 except StopIteration:
     pass
 
+# storage for the correlations; need to provide differing amounts of space depending on PCA or not
+correlation_dict = dict()
 # optionally do PCA
 if args.pca:
     print "APPLYING PCA..."
     for state_name in state_super_dict:
         pca = PCA(n_components=args.pca)  # not sure if we have to redefine it each time, and how long that takes...
-        state_super_dict[state_name] = pca.fit(state_super_dict[state_name])
+        state_super_dict[state_name] = pca.fit_transform(state_super_dict[state_name])
         print state_name, "got", pca.n_components_, "components!"
+        correlation_dict[name] = numpy.zeros(pca.n_components_, dtype="float32")
 else:
     print "NO PCA USED!"
+    for name in sc.state_var_names:
+        correlation_dict[name] = numpy.zeros(lstm_net.hidden_dims[0], dtype="float32")
 
 # do correlations between super long sequences...
 for state_name in correlation_dict:
