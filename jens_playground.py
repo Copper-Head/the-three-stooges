@@ -103,7 +103,7 @@ try:
         # mask is in shape batch_size x seq_len, so NOT transposed, so it is flattened in C order
         mask_reshaped = mask_batch.flatten(order="C")
         # get marker (very preliminary...)
-        seq_len_correlator = mark_word_boundaries_batch(seq_batch, mask_batch)
+        seq_len_correlator = corr_function(seq_batch, mask_batch)
         super_marker = numpy.append(super_marker, seq_len_correlator)
         for state_type in state_batch_dict:
             state_batch = state_batch_dict[state_type]
@@ -129,6 +129,8 @@ if args.pca:
         pca = PCA(n_components=args.pca)  # not sure if we have to redefine it each time, and how long that takes...
         state_super_dict[state_name] = pca.fit(state_super_dict[state_name])
         print state_name, "got", pca.n_components_, "components!"
+else:
+    print "NO PCA USED!"
 
 # do correlations between super long sequences...
 for state_name in correlation_dict:
