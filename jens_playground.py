@@ -1,3 +1,4 @@
+import argparse
 import cPickle
 
 import numpy
@@ -6,12 +7,18 @@ from fuel.datasets.hdf5 import H5PYDataset
 from fuel.streams import DataStream
 from fuel.schemes import SequentialScheme
 from scipy.stats import pearsonr
+from sklearn.decomposition import PCA
 from theano import function
 
 from custom_blocks import PadAndAddMasks
 from network import NetworkType, Network
 from util import StateComputer, mark_seq_len, mark_word_boundaries
 
+
+parser = argparse.ArgumentParser()
+parser.add_argument("function", help="Correlation function to use.")
+parser.add_argument("-p", "--pca", type=float, help="Whether to use PCA (and if so, how much variance explained?")
+args = parser.parse_args()
 
 numpy.set_printoptions(precision=8, suppress=True)
 
@@ -37,6 +44,14 @@ def mark_letter(seq_batch, mask_batch, letter):
     return padded_markers[mask_batch.flatten(order="C") == 1]
 
 
+if args.function == "len":
+    corr_function = mark_seq_len_batch
+elif args.function == "bound":
+    corr_function = mark_word_boundaries_batch
+else:
+    raise ValueError("Invalid correlation function specified!")
+
+
 map_chr_2_ind = cPickle.load(open("char_to_ind.pkl"))
 map_ind_2_chr = cPickle.load(open("ind_to_char.pkl"))
 lstm_net = Network(NetworkType.SIMPLE_RNN, len(map_ind_2_chr), hidden_dims=[1024])
@@ -58,7 +73,7 @@ sc = StateComputer(lstm_net.cost_model, map_chr_2_ind)
 # storage for the correlations at the very end
 correlation_dict = dict()
 for name in sc.state_var_names:
-    correlation_dict[name] = numpy.zeros(1024, dtype=float)  # TODO NOT VERY GENERAL!!!
+    correlation_dict[name] = numpy.zeros(lstm_net.hidden_dims[0], dtype="float32")
 
 # get validation data to run over
 valid_data = H5PYDataset("bible.hdf5", which_sets=("valid",), load_in_memory=True)
@@ -71,7 +86,7 @@ iterator = data_stream.get_epoch_iterator()
 # storage for the "supersequences" concatenated over all sequences
 state_super_dict = dict()
 for name in sc.state_var_names:
-    state_super_dict[name] = numpy.empty(shape=(0, 1024))  # TODO NOT VERY GENERAL AGAIN
+    state_super_dict[name] = numpy.empty(shape=(0, lstm_net.hidden_dims[0]), dtype="float32")
 super_marker = numpy.empty(shape=(0,))
 
 # if this is true, each state will be aligned with the character (or event derived from it) that it is used to *predict*
@@ -106,6 +121,15 @@ try:
         print "MADE IT THROUGH BATCH"
 except StopIteration:
     pass
+
+# optionally do PCA
+if args.pca:
+    print "APPLYING PCA..."
+    for state_name in state_super_dict:
+        pca = PCA(n_components=args.pca)  # not sure if we have to redefine it each time, and how long that takes...
+        state_super_dict[state_name] = pca.fit(state_super_dict[state_name])
+        print state_name, "got", pca.n_components_, "components!"
+
 # do correlations between super long sequences...
 for state_name in correlation_dict:
     for dim in xrange(correlation_dict[state_name].shape[0]):
