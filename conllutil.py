@@ -39,6 +39,7 @@ class CoNLLData(object):
             self._word_transform = word_transform
 
         self.reset()
+        self.reset_sentences()
 
     def wordsequences(self):
         return self._wordseqs if self._wordseqs else [[self._word_transform(tup[1]) for tup in seq] for seq in self._sequences]
@@ -48,6 +49,10 @@ class CoNLLData(object):
 
     def possequences(self):
         return self._posseqs if self._posseqs else [[tup[4] for tup in seq] for seq in self._sequences]
+
+    def iter_posseqs(self):
+        for seq in self._sequences:
+            yield [tup[4] for tup in seq]
 
     def _trees(self):
         for seq in self._sequences:
@@ -59,9 +64,30 @@ class CoNLLData(object):
             except UserWarning:
                 yield None
 
+    def _sentences(self):
+        s_ix = -1
+        for seq in self._sequences:
+            gs = ''
+            s_ix += 1
+            pos_seq = []
+            for nd in seq:
+                gs += '\t'.join(nd+['_','_']) + '\n'
+                pos_seq.append(nd[4])
+            try:
+                graph = DependencyGraph(gs, top_relation_label='S', cell_separator='\t')
+                yield s_ix, graph, pos_seq
+            except UserWarning:
+                yield
+
     def tree(self):
         try:
             return next(self._tree)
+        except StopIteration:
+            return
+
+    def sentence(self):
+        try:
+            return next(self._sentence)
         except StopIteration:
             return
 
@@ -71,6 +97,9 @@ class CoNLLData(object):
 
     def reset(self):
         self._tree = self._trees()
+
+    def reset_sentences(self):
+        self._sentence = self._sentences()
 
     def _fix_indices(self):
         for seq in self._sequences:
