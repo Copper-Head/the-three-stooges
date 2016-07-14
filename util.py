@@ -3,7 +3,7 @@ from itertools import chain
 
 import numpy
 from theano import function
-
+import warnings
 
 class StateComputer(object):
     """
@@ -180,7 +180,6 @@ def _dependencies(dep_graph):
             dep_dict[dep_label].append((index - 1, dep_index - 1))
     return dep_dict
 
-
 def simple_mark_dependency(dep_graph, dep_label):
     """Simple marking function for dependencies.
 
@@ -188,6 +187,7 @@ def simple_mark_dependency(dep_graph, dep_label):
     Constructs a numpy array of zeros and marks with 1 the positions of words
     that take part in the dependency.
     """
+    warnings.warn('Use mark_dependency with marking_fun='+MarkingFunctions.__name__+'.'+MarkingFunctions.simple_mark.__name__+' instead.', DeprecationWarning)
     dep_dict = _dependencies(dep_graph)
     indeces = dep_dict[dep_label]
     unique_index_list = list(set(chain.from_iterable(indeces)))
@@ -240,3 +240,30 @@ def mark_dependency(dep_graph, dep_label, prior_long=True, marking_fun=lambda x,
     for ixlist in filtered_indices:
         marked[ixlist,] = marking_fun(marked, ixlist, **fun_kwargs)
     return marked
+
+
+class MarkingFunctions(object):
+    """
+    This class is a collection of marking functions in the sense of functions to be used by
+    the markers above (mark_dependency, mark_property) to mark a phenomenon of interest.
+    """
+    @staticmethod
+    def rising_flank_linear(vec, ix_list):
+        """
+        this function only overwrites zeros
+        """
+        offset = 1/(len(vec[ix_list,])+1)
+        raw_val = numpy.arange(offset, 1+offset, offset)
+        return raw_val[-len(raw_val):]
+
+    # might make more sense for longer sequences
+    @staticmethod
+    def flank(vec, ix_list, nonlinearity=lambda x: x, frm=0, to=1, coeff=1):
+        return coeff*nonlinearity(numpy.arange(frm, to, abs((to-frm)/len(ix_list))))[-len(ix_list):]
+
+    @staticmethod
+    def simple_mark(vec, ixlist):
+        ret_val = numpy.zeros(len(ixlist))
+        ret_val[0] = 1
+        ret_val[-1] = 1
+        return ret_val
