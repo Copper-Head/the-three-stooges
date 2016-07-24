@@ -1,9 +1,11 @@
 from collections import defaultdict
 from itertools import chain
-
+import logging
 import numpy
 from theano import function
 import warnings
+
+logger = logging.getLogger(__name__)
 
 class StateComputer(object):
     """
@@ -27,6 +29,7 @@ class StateComputer(object):
         self.inputs = sorted(cost_model.inputs, key=lambda var: var.name)
         self.func = function(self.inputs, self.state_variables)
         self.map_char_to_ind = map_char_to_ind
+        self._prob_func = None
 
     def _relevant(self, aux_var):
         not_final_value = "final_value" not in aux_var.name
@@ -81,6 +84,28 @@ class StateComputer(object):
         computed_states = self.func(sequences, mask)
         return dict(zip(self.state_var_names, computed_states))
 
+    def compute_model_perplexity(self, test_sequences, prob_func_inputs=None, prob_func_outputs=None, mask=None):
+        if mask is None:
+            test_sequences, mask = pad_mask(test_sequences)
+        if self._prob_func is None:
+            if prob_func_inputs is None or prob_func_outputs is None: raise ValueError('Inputs needed for initializing probability function.')
+            self.set_prob_func(prob_func_inputs, prob_func_outputs)
+        elif prob_func_inputs or prob_func_outputs:
+            logger.info('State computer already has a probability function, inputs argument will be ignored. You can overwrite it by calling set_prob_func.')
+        probs = self._prob_func(test_sequences, mask).swapaxes(0, 1)  # sentence-dimension first
+        seq_probs = []
+        seq_pps = []
+        for s_ix in range(len(probs)):
+            rows = numpy.arange(len(test_sequences[s_ix]))
+            elem_wise_probs = probs[s_ix][rows, test_sequences[s_ix]]
+            s_prob = elem_wise_probs.prod()
+            seq_probs.append(s_prob)
+            seq_pps.append(s_prob ** (-1/len(test_sequences[s_ix])))
+        return sum(seq_pps)/len(seq_pps)
+
+    def set_prob_func(self, inputs, outputs):
+        self._prob_func = function(inputs, outputs)
+
 
 def drop_batch_dim(array_with_batch_dim):
     """When reading in one sentence at a time the batch dimension is superflous.
@@ -118,7 +143,6 @@ def select_positions(aux_var_dict, indx=1):
     """
     return {var_name: var_val[indx] for var_name, var_val in aux_var_dict.items()}
 
-
 def mark_seq_len(seq):
     return numpy.arange(len(seq))
 
@@ -132,7 +156,7 @@ def mark_word_boundaries(seq):
     }
     return numpy.array([1 if char in wb else 0 for char in seq])
 
-def mark_char_property(seq, func):
+def mark_char_property(seq, bool_property_fun):
     """
     the func arg is supposed to be a str function, e.g.:
     str.isupper
@@ -143,10 +167,40 @@ def mark_char_property(seq, func):
 
     A complex lambda expression or wrapper function is also possible, of course
     :param seq:
-    :param func:
+    :param bool_property_fun:
     :return:
     """
-    return numpy.array([1 if func(seq[i]) else 0 for i in range(len(seq))])
+    return numpy.array([1 if bool_property_fun(seq[i]) else 0 for i in range(len(seq))])
+
+
+def mark_bracketing(seq, opening, closing, marking_fun, ignore_starts=None, **kwargs):
+    """
+
+    :param seq:
+    :param opening:
+    :param closing:
+    :param marking_fun:
+    :param ignore_starts: a set of start indexes to be ignored, occures rarely
+    :param kwargs:
+    :return:
+    """
+    ix = 0
+    trigger = [opening, closing]
+    collect = False
+    ix_list = []
+    ret_val = numpy.zeros(len(seq))
+    while ix < len(seq):
+        if seq[ix] == trigger[int(collect)] and not ix in ignore_starts:
+            collect = not collect
+            if not collect:
+                ix_list.append(ix)
+                ret_val[ix_list,] = marking_fun(ret_val, ix_list, **kwargs)
+                ix_list = []
+        if collect:
+            ix_list.append(ix)
+        ix += 1
+    return ret_val
+
 
 def filter_by_threshold(neuron_array, threshold=1):
     """Tells which neuron activations surpass a certain threshold.
@@ -165,7 +219,7 @@ def unpack_value_lists(some_dict):
     return ((key, v) for key in some_dict for v in some_dict[key])
 
 
-def _dependencies(dep_graph):
+def dependencies(dep_graph):
     """Turns nltk.parse.DependencyGraph into dict keyed by dependency labels.
 
     Returns dict that maps dependency labels to lists.
@@ -188,7 +242,7 @@ def simple_mark_dependency(dep_graph, dep_label):
     that take part in the dependency.
     """
     warnings.warn('Use mark_dependency with marking_fun='+MarkingFunctions.__name__+'.'+MarkingFunctions.simple_mark.__name__+' instead.', DeprecationWarning)
-    dep_dict = _dependencies(dep_graph)
+    dep_dict = dependencies(dep_graph)
     indeces = dep_dict[dep_label]
     unique_index_list = list(set(chain.from_iterable(indeces)))
     marked = numpy.zeros(len(dep_dict) - 1)
@@ -196,7 +250,7 @@ def simple_mark_dependency(dep_graph, dep_label):
     return marked
 
 
-def mark_dependency(dep_graph, dep_label, prior_long=True, marking_fun=lambda x, ix: numpy.ones(len(ix)), **fun_kwargs):
+def mark_dependency(dep_graph, dep_label, prior_long=True, precomputed_dependencies=None, marking_fun=lambda x, ix: numpy.ones(len(ix)), **fun_kwargs):
     """
     This function marks a dependency like simple_mark_dependency, so head and dependent. But in addition
     the tokens between head and dependent are marked as well. The marking can be a simple sequence of 1s,
@@ -219,7 +273,8 @@ def mark_dependency(dep_graph, dep_label, prior_long=True, marking_fun=lambda x,
     :param fun_kwargs:
     :return:
     """
-    raw_indices = {frozenset(range(sorted(tpl)[0], sorted(tpl)[1]+1)) for tpl in _dependencies(dep_graph)[dep_label]}
+    raw_deps = precomputed_dependencies if not precomputed_dependencies is None else dependencies(dep_graph)[dep_label]  # note: if empty list provided instead of None, nothing is marked -> that's desired
+    raw_indices = {frozenset(range(sorted(tpl)[0], sorted(tpl)[1]+1)) for tpl in raw_deps}
     filtered_indices = []
     if prior_long:
         for ixset in raw_indices:
@@ -249,6 +304,7 @@ class MarkingFunctions(object):
     """
     @staticmethod
     def rising_flank_linear(vec, ix_list):
+        # TODO this is actually a special case of flank and should be removed in the future
         """
         this function only overwrites zeros
         """

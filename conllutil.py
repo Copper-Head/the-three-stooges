@@ -38,6 +38,8 @@ class CoNLLData(object):
         if lazy_loading:
             self._word_transform = word_transform
 
+        self._tok2ix = tok_to_ix_map
+
         self.reset()
         self.reset_sentences()
 
@@ -70,14 +72,16 @@ class CoNLLData(object):
             gs = ''
             s_ix += 1
             pos_seq = []
+            ix_seq = []
             for nd in seq:
                 gs += '\t'.join(nd+['_','_']) + '\n'
+                ix_seq.append(self._tok2ix[nd[1]])
                 pos_seq.append(nd[4])
             try:
                 graph = DependencyGraph(gs, top_relation_label='S', cell_separator='\t')
-                yield s_ix, graph, pos_seq
+                yield s_ix, ix_seq, pos_seq, graph
             except UserWarning:
-                yield
+                continue
 
     def tree(self):
         try:
