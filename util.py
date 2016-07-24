@@ -84,7 +84,7 @@ class StateComputer(object):
         computed_states = self.func(sequences, mask)
         return dict(zip(self.state_var_names, computed_states))
 
-    def compute_model_perplexity(self, test_sequences, prob_func_inputs=None, prob_func_outputs=None, mask=None):
+    def compute_sequence_probabilities(self, test_sequences, mask=None, prob_func_inputs=None, prob_func_outputs=None):
         if mask is None:
             test_sequences, mask = pad_mask(test_sequences)
         if self._prob_func is None:
@@ -94,14 +94,12 @@ class StateComputer(object):
             logger.info('State computer already has a probability function, inputs argument will be ignored. You can overwrite it by calling set_prob_func.')
         probs = self._prob_func(test_sequences, mask).swapaxes(0, 1)  # sentence-dimension first
         seq_probs = []
-        seq_pps = []
         for s_ix in range(len(probs)):
             rows = numpy.arange(len(test_sequences[s_ix]))
             elem_wise_probs = probs[s_ix][rows, test_sequences[s_ix]]
             s_prob = elem_wise_probs.prod()
             seq_probs.append(s_prob)
-            seq_pps.append(s_prob ** (-1/len(test_sequences[s_ix])))
-        return sum(seq_pps)/len(seq_pps)
+        return numpy.array(seq_probs)
 
     def set_prob_func(self, inputs, outputs):
         self._prob_func = function(inputs, outputs)
