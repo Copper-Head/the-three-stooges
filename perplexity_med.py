@@ -5,6 +5,7 @@
 
 # In[1]:
 
+import argparse
 from blocks.filter import VariableFilter
 from custom_blocks import PadAndAddMasks
 from fuel.datasets.hdf5 import H5PYDataset
@@ -15,10 +16,13 @@ import numpy
 import pickle
 from util import StateComputer
 
+parser = argparse.ArgumentParser()
+parser.add_argument('-nt', '--ntype', required=True)
+parser.parse_args()
 
 # In[6]:
 
-NTYPE = NetworkType.GRU
+NTYPE = parser.ntype
 IX_2_TOK_FILE = './data/hdt-ncs-eos-np-35-7-1_ix2tok.npy'
 DATA_FILE = './data/hdt-ncs-eos-np-35-7-1_data.hdf5'
 MODEL_FILE = './seqgen_'+NTYPE+'_512_512.pkl'
@@ -57,6 +61,6 @@ for seqs, mask in it_data:  # do it like this instead of using normal batches to
     probs.append(sc.compute_raw_sequence_probabilities(seqs, mask=mask))
     i += 1
     print('step', i, 'done')
-with open('probs_gru.pkl', 'wb') as f:
+with open('probs_{}.pkl'.format(NTYPE), 'wb') as f:
     pickle.dump(probs, f)
 print('done')
