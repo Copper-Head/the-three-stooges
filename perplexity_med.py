@@ -18,11 +18,11 @@ from util import StateComputer
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-nt', '--ntype', required=True)
-parser.parse_args()
+args = parser.parse_args()
 
 # In[6]:
 
-NTYPE = parser.ntype
+NTYPE = args.ntype
 IX_2_TOK_FILE = './data/hdt-ncs-eos-np-35-7-1_ix2tok.npy'
 DATA_FILE = './data/hdt-ncs-eos-np-35-7-1_data.hdf5'
 MODEL_FILE = './seqgen_'+NTYPE+'_512_512.pkl'
