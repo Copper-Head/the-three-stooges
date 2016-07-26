@@ -101,6 +101,22 @@ class StateComputer(object):
             seq_probs.append(s_prob)
         return numpy.array(seq_probs)
 
+    def compute_raw_sequence_probabilities(self, test_sequences, mask=None, prob_func_inputs=None, prob_func_outputs=None):
+        if mask is None:
+            test_sequences, mask = pad_mask(test_sequences)
+        if self._prob_func is None:
+            if prob_func_inputs is None or prob_func_outputs is None: raise ValueError('Inputs needed for initializing probability function.')
+            self.set_prob_func(prob_func_inputs, prob_func_outputs)
+        elif prob_func_inputs or prob_func_outputs:
+            logger.info('State computer already has a probability function, inputs argument will be ignored. You can overwrite it by calling set_prob_func.')
+        probs = self._prob_func(test_sequences, mask).swapaxes(0, 1)  # sentence-dimension first
+        seq_probs = []
+        for s_ix in range(len(probs)):
+            rows = numpy.arange(len(test_sequences[s_ix]))
+            elem_wise_probs = probs[s_ix][rows, test_sequences[s_ix]]
+            seq_probs.append(elem_wise_probs)
+        return numpy.array(seq_probs)
+
     def set_prob_func(self, inputs, outputs):
         self._prob_func = function(inputs, outputs)
 
