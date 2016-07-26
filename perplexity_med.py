@@ -10,16 +10,10 @@ from custom_blocks import PadAndAddMasks
 from fuel.datasets.hdf5 import H5PYDataset
 from fuel.schemes import SequentialScheme
 from fuel.streams import DataStream
-import gc
-from math import isfinite
-from matplotlib import pyplot
 from network import *
 import numpy
-import operator
 import pickle
-from random import randrange
-import time
-from util import StateComputer, pad_mask
+from util import StateComputer
 
 
 # In[6]:
