@@ -21,7 +21,7 @@ from util import StateComputer
 NTYPE = NetworkType.GRU
 IX_2_TOK_FILE = './data/hdt-ncs-eos-np-35-7-1_ix2tok.npy'
 DATA_FILE = './data/hdt-ncs-eos-np-35-7-1_data.hdf5'
-MODEL_FILE = './models/hdt/hdt-ncs-eos-np-35-7-1/models/new/seqgen_'+NTYPE+'_512_512.pkl'
+MODEL_FILE = './seqgen_'+NTYPE+'_512_512.pkl'
 BATCH_SIZE = 100
 
 
