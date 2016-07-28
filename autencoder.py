@@ -20,6 +20,7 @@ from theano import tensor
 
 parser = argparse.ArgumentParser(description="All hail the saviour.")
 parser.add_argument("file", help=".hdf5 file with the data.")
+parser.add_argument("save", help="Path to save main loop to.")
 parser.add_argument("-d", "--dim", type=int, default=512, help="Dimension of hidden layer (default: 512).")
 parser.add_argument("-b", "--batchsize", type=int, default=32, help="Guess what (default: 32).")
 args = parser.parse_args()
