@@ -47,8 +47,11 @@ algorithm = GradientDescent(cost=cost, parameters=cost_model.parameters,
 
 # handle data
 #data = H5PYDataset(args.file, which_sets="act_seqs", load_in_memory=True)
-data = numpy.random.rand(10000, 512)
-data = OrderedDict(("states", data))
+dataraw = numpy.zeros((10000, 512), dtype="float32")
+for row in dataraw:
+    dataraw[row] = numpy.random.rand(512)
+data = OrderedDict()
+data["states"] = dataraw
 data = IndexableDataset(data)
 datastream = DataStream.default_stream(data, iteration_scheme=ShuffledScheme(data.num_examples,
                                                                              batch_size=args.batchsize))
