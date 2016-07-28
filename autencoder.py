@@ -1,4 +1,5 @@
 import argparse
+from collections import OrderedDict
 
 import numpy
 from blocks.algorithms import GradientDescent, Adam
@@ -47,6 +48,7 @@ algorithm = GradientDescent(cost=cost, parameters=cost_model.parameters,
 # handle data
 #data = H5PYDataset(args.file, which_sets="act_seqs", load_in_memory=True)
 data = numpy.random.rand(10000, 512)
+data = OrderedDict(("states", data))
 data = IndexableDataset(data)
 datastream = DataStream.default_stream(data, iteration_scheme=ShuffledScheme(data.num_examples,
                                                                              batch_size=args.batchsize))
