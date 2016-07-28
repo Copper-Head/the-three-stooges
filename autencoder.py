@@ -53,7 +53,7 @@ algorithm = GradientDescent(cost=cost, parameters=cost_model.parameters,
                             step_rule=Adam())
 
 # handle data
-data = H5PYDataset(args.file, which_sets="train", load_in_memory=True)
+data = H5PYDataset(args.file, which_sets=("train",), load_in_memory=True)
 # trash data for testing
 """
 dataraw = numpy.zeros((10000, 512), dtype="float32")
