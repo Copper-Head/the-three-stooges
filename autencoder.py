@@ -53,16 +53,16 @@ algorithm = GradientDescent(cost=cost, parameters=cost_model.parameters,
                             step_rule=Adam())
 
 # handle data
-#data = H5PYDataset(args.file, which_sets="train", load_in_memory=True)
+data = H5PYDataset(args.file, which_sets="train", load_in_memory=True)
 # trash data for testing
-
+"""
 dataraw = numpy.zeros((10000, 512), dtype="float32")
 for row in xrange(dataraw.shape[0]):
     dataraw[row] = numpy.random.rand(512)
 data = OrderedDict()
 data["act_seqs"] = dataraw
 data = IndexableDataset(data)
-
+"""
 datastream = DataStream.default_stream(data, iteration_scheme=ShuffledScheme(data.num_examples,
                                                                              batch_size=args.batchsize))
 
