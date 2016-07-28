@@ -48,7 +48,7 @@ algorithm = GradientDescent(cost=cost, parameters=cost_model.parameters,
 # handle data
 #data = H5PYDataset(args.file, which_sets="act_seqs", load_in_memory=True)
 dataraw = numpy.zeros((10000, 512), dtype="float32")
-for row in dataraw:
+for row in xrange(dataraw.shape[0]):
     dataraw[row] = numpy.random.rand(512)
 data = OrderedDict()
 data["states"] = dataraw
