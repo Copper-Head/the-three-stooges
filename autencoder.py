@@ -22,17 +22,18 @@ from theano import tensor
 parser = argparse.ArgumentParser(description="All hail the saviour.")
 parser.add_argument("file", help=".hdf5 file with the data.")
 parser.add_argument("save", help="Path to save main loop to.")
-parser.add_argument("-d", "--dim", type=int, default=512, help="Dimension of hidden layer (default: 512).")
+parser.add_argument("-d", "--dim", default="512", help="Dimension of hidden layer(s). Example: 256,256 (default: 512).")
 parser.add_argument("-b", "--batchsize", type=int, default=32, help="Guess what (default: 32).")
 args = parser.parse_args()
 
 # define model
-states = tensor.matrix("states")
+states = tensor.matrix("act_seqs")
 
 input_dim = 512
-encoder_dim = args.dim
+hidden_dims = [int(dim) for dim in args.dim.split(",")]
 
-autoencoder = MLP(activations=[Tanh(), Identity()], dims=[input_dim, encoder_dim, input_dim],
+autoencoder = MLP(activations=[Tanh() for _ in xrange(len(hidden_dims))] + [Identity()],
+                  dims=[input_dim] + hidden_dims + [input_dim],
                   weights_init=Uniform(width=0.02), biases_init=Constant(0))
 autoencoder.initialize()
 
@@ -46,13 +47,16 @@ algorithm = GradientDescent(cost=cost, parameters=cost_model.parameters,
                             step_rule=Adam())
 
 # handle data
-#data = H5PYDataset(args.file, which_sets="act_seqs", load_in_memory=True)
+#data = H5PYDataset(args.file, which_sets="train", load_in_memory=True)
+# trash data for testing
+
 dataraw = numpy.zeros((10000, 512), dtype="float32")
 for row in xrange(dataraw.shape[0]):
     dataraw[row] = numpy.random.rand(512)
 data = OrderedDict()
 data["states"] = dataraw
 data = IndexableDataset(data)
+
 datastream = DataStream.default_stream(data, iteration_scheme=ShuffledScheme(data.num_examples,
                                                                              batch_size=args.batchsize))
 
