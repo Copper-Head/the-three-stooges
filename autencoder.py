@@ -3,7 +3,7 @@ from collections import OrderedDict
 
 import numpy
 from blocks.algorithms import GradientDescent, Adam
-from blocks.bricks import MLP, Tanh, Identity
+from blocks.bricks import MLP, BatchNormalizedMLP, Tanh, Identity
 from blocks.bricks.cost import SquaredError
 from blocks.extensions import FinishAfter, Printing, ProgressBar, Timing
 from blocks.extensions.monitoring import TrainingDataMonitoring
@@ -23,7 +23,8 @@ parser = argparse.ArgumentParser(description="All hail the saviour.")
 parser.add_argument("file", help=".hdf5 file with the data.")
 parser.add_argument("save", help="Path to save main loop to.")
 parser.add_argument("-d", "--dim", default="512", help="Dimension of hidden layer(s). Example: 256,256 (default: 512).")
-parser.add_argument("-b", "--batchsize", type=int, default=32, help="Guess what (default: 32).")
+parser.add_argument("-s", "--batchsize", type=int, default=32, help="Guess what (default: 32).")
+parser.add_argument("-b", "--batchnorm", action="store_true", help="Flag to use batch normalization.")
 args = parser.parse_args()
 
 # define model
@@ -32,7 +33,12 @@ states = tensor.matrix("act_seqs")
 input_dim = 512
 hidden_dims = [int(dim) for dim in args.dim.split(",")]
 
-autoencoder = MLP(activations=[Tanh() for _ in xrange(len(hidden_dims))] + [Identity()],
+if args.batchnorm:
+    network = BatchNormalizedMLP
+else:
+    network = MLP
+
+autoencoder = network(activations=[Tanh() for _ in xrange(len(hidden_dims))] + [Identity()],
                   dims=[input_dim] + hidden_dims + [input_dim],
                   weights_init=Uniform(width=0.02), biases_init=Constant(0))
 autoencoder.initialize()
@@ -54,7 +60,7 @@ dataraw = numpy.zeros((10000, 512), dtype="float32")
 for row in xrange(dataraw.shape[0]):
     dataraw[row] = numpy.random.rand(512)
 data = OrderedDict()
-data["states"] = dataraw
+data["act_seqs"] = dataraw
 data = IndexableDataset(data)
 
 datastream = DataStream.default_stream(data, iteration_scheme=ShuffledScheme(data.num_examples,
