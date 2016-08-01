@@ -1,0 +1,25 @@
+\begin{frame}{\expvii}
+	\textbf{motivation:}
+	\begin{itemize}
+		\item as well as in the word-level experiment we need to explore a way to find out about neuron groups correlating with input-specific phenomena		
+	\end{itemize}
+	\textbf{procedure:}
+	\begin{itemize}
+		\item we used PCA to find the neurons explaining between 90 and 99\% of the activation variation in a 1-layered simple recurrent ($H=1024$)
+		\item after that, we correlated word bounderies and sequence length on the remaining components
+	\end{itemize}
+\end{frame}
+\begin{frame}{\expvii}
+	\textbf{results:}
+	\begin{itemize}
+		\item dimensionality was reduced on $\approx 500$
+		\item sequence length correlation decreased  
+		\item word boundery correlation decreased on \texttt{0.3} (\texttt{0.6} without PCA)
+	\end{itemize}
+	\textbf{conclusion:}
+	\begin{itemize}
+		\item PCA failed
+		\item we were using a linear reduction method on clearly non-linear data
+		\item this motivates E10
+	\end{itemize}
+\end{frame}

@@ -1,0 +1,26 @@
+\begin{frame}{\expix}
+	\textbf{motivation:}
+	\begin{itemize}
+		\item activation sequences are continues signals
+		\item why not using methods for signal analysis on it?
+	\end{itemize}
+	\textbf{procedure:}
+	\begin{itemize}
+		\item we decided to use an ERP signal analysis method
+		\item general idea: compare averaged signals to noise to detect \textit{real events}
+		\item feed the network $V$ artificial character sequences of length 2
+		\item all sequences share our character of interest (COI) as first character, the second character is unique for each sequence
+		\item the average of activations for these sequences is our COI's representation
+		\item do the same for each other character of the vocabulary, but average over all gathered activations (noise representation)
+		\item this experiment was performed for LSTM and simple recurrent on the \lk -dataset
+	\end{itemize}
+	\textbf{results:}
+	\begin{itemize}
+		\item strong differences between characters
+		\item but how to interpret it?
+	\end{itemize}
+	\textbf{conclusion:}
+	\begin{itemize}
+		\item again, this method was performed for single neurons, we did not get an insight on groups of neurons which we need
+	\end{itemize}
+\end{frame}

@@ -1,0 +1,97 @@
+\documentclass{beamer}
+\mode<presentation>
+{
+  \usetheme{CambridgeUS}     
+  \usecolortheme{crane}
+  \usefonttheme{default} 
+  %\setbeamertemplate{navigation symbols}{}
+  \setbeamertemplate{caption}[numbered]
+} 
+
+\usepackage[english]{babel}
+\usepackage{fontspec}
+\usepackage{subfig}
+\usepackage{color}
+\usepackage{tabularx}
+
+\usepackage{natbib}
+\bibliographystyle{plainnat}
+\usepackage{tikz}
+\usetikzlibrary{decorations.pathreplacing,calc}
+\newcommand{\tikzmark}[1]{\tikz[overlay,remember picture] \node (#1) {};}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+
+\newcommand{\kj}{KJ}
+\newcommand{\lk}{LK}
+\newcommand{\hdt}{HDT}
+
+% experiments:
+\newcommand{\expi}{E1: Plotting activations of a char-level LSTM for \kj}
+\newcommand{\expii}{E2: Neuron behaviour in a \textit{continuous-state} char-level LSTM for \lk}
+\newcommand{\expiii}{E3: \kj: Do char-level sequence generators learn words?}
+\newcommand{\expiv}{E4: Correlating activations of a char-level sequence generator for \kj}
+\newcommand{\expv}{E5: Correlating dependency relations and pos tags with activations for \hdt (word-level)}
+\newcommand{\expvi}{E6: \hdt~-- Clustering correlations}
+\newcommand{\expvii}{E7: \kj~-- PCA and correlations}
+\newcommand{\expviii}{E8: Plotting revisited -- LSTMVis}
+\newcommand{\expix}{E9: ERP analysis on \lk}
+\newcommand{\expx}{E10: Facing the linearity problem with autoencoders}
+
+% research questions:
+\newcommand{\rqi}{What exactly is it, what a neural network learns?}
+\newcommand{\rqii}{How is it represented in the network?}
+\newcommand{\rqiii}{Can we find and/or track it?}
+\newcommand{\rqiv}{What is going on inside a neural network at sampling time?}
+
+\setcitestyle{
+	Braces : round	
+}
+
+\title{Inspecting Neural Networks}
+\subtitle{PM Deeplearning summer term 2016}
+\author{J. Johannsmeier, I. Kurenkov, M. Klotz}
+
+\begin{document}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\include{slides/0-0} % research questions
+\include{slides/0-1} % continue research questions
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Outline}
+	\begin{itemize}
+		\item data, tasks and architectures
+		\item the means we used for the analysis
+		\item the experiments in detail
+		\item review of methods
+		\item critique
+		\item references
+	\end{itemize}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\include{slides/taskdataarch}
+\include{slides/meansofanalysis}
+\include{slides/experiments}
+\include{slides/exp1}
+\include{slides/exp2}
+\include{slides/exp3}
+\include{slides/exp4}
+\include{slides/exp5}
+\include{slides/exp6}
+\include{slides/exp7}
+%\include{slides/exp8}
+\include{slides/exp9} 
+\include{slides/exp10}
+\include{slides/methodreview}
+\include{critique}
+%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{References}
+	\bibliography{bib}
+\end{frame}
+
+\end{document}

@@ -1,0 +1,29 @@
+\begin{frame}{\expi}
+	\textbf{motivation:}
+	\begin{itemize}
+		\item Can we reproduce \citeauthor{karpathy2015visualizing}'s results or generate similar findings?
+		\item exploring visualizations
+		\item this is addressing all four research questions
+		\item get a first intuition
+	\end{itemize}
+\end{frame}
+\begin{frame}{\expi}
+	\textbf{procedure:}
+	\begin{itemize}
+		\item train a 3-layered LSTM (512, 512, 512) on character level for the \kj -data
+		\item feed sentences through the network and plot the activations with hinton diagrams and heat maps
+		\item observe the broad distribution of high and low activation \textit{in a specific layer} 
+		\item find neurons, whose activation could be correlating to specific phenomena in the data (a specific character or character sequence, etc.)
+	\end{itemize}
+\end{frame}
+\begin{frame}{\expi}
+	\textbf{observations:}
+	\begin{itemize}
+		\item cells tracking \textit{sequence length} and \textit{text structure} (verse number vs. actual verse)
+	\end{itemize}
+	\textbf{conclusion:}
+	\begin{itemize}
+		\item this experiment (among others) encouraged „more sophisticated“ techniques of analysis, such as computing correlations in a next step
+		\item hinton diagrams where found a useful tool for a quick inspection; I'll be back on this in the correlation chapter
+	\end{itemize}
+\end{frame}

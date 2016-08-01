@@ -1,0 +1,31 @@
+\begin{frame}{\expiii}
+	\textbf{motivation:}
+	\begin{itemize} % for reasons of supporting the story, this is told first
+		\item addressing mainly research questions 1, 3 and 4
+		\item when learning character sequences of \kj, does the network learn reoccurring sequences (atomic parts)
+	\end{itemize}
+	\textbf{procedure:}
+	\begin{itemize}
+		\item train a char-level model (3-layered LSTM) on \kj
+		\item a very common word in \kj~is “LORD”
+		\item feed sequences containing LORD through the network
+		\item find the cell of the output layer that assigns a high prediction value for $P(“O” \mid “L”)$, $P(“R” \mid “O”)$ and $P(“D” \mid “R”)$
+		\item from there try to find high $w_ih_i$~$\forall i \in \{1..H\}$
+		\item correlate $w_i\cdot h_{seq}$ of the neuron with a marking for the current letter of observation % PROVIDE EXAMPLE HERE
+	\end{itemize}
+\end{frame}
+\begin{frame}{\expiii}
+	\textbf{results:}
+	\begin{itemize}
+		\item no correlation found
+		\item we observed high probabilities for “O”, “R” and “D” after reading an “L”, which is not a surprise on \kj
+		\item even normalizing by the readout-output did not change the picture 
+	\end{itemize}
+	\textbf{conclusion:}
+	\begin{itemize}
+		\item problem of this method: we are again assuming that always the same neuron is responsible for specific network behaviour	
+		\item we could not completely solve the normalization problem	
+		\item actually \texttt{pearsonr} is inappropriate for 0-1-marking vectors
+		\item using \texttt{spearman}-correlation instead also showed low values
+	\end{itemize}
+\end{frame}

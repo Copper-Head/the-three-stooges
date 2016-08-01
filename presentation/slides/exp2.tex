@@ -1,0 +1,37 @@
+\begin{frame}{\expii}
+	\textbf{motivation:}
+	\begin{itemize}
+		\item try to reproduce \citeauthor{karpathy2015visualizing}'s results on formal language (character level)
+		\item do especially the cell activations show correlations (visual) with properties of the input text?
+		\item apart from our questions this addresses even more, if it has learnt something and/or if it reveals this something in a way, such that we are able to observe it in the activations
+
+		\vspace{1em}
+		$\rightarrow$ if, where, how, (who)?
+	\end{itemize}
+\end{frame}
+\begin{frame}{\expii}
+	\textbf{procedure:}
+	\begin{itemize}
+		\item \citet{karpathy2015visualizing} trained their network on continuous sequences with truncated backpropagation through time 
+		\item to imitate this behaviour with blocks without running in memory issues, we built a sequence generator, that learns fixed-length sequences (length 250) with batch size 1, while the initial state value for a sequence $i$ is the state's value after reading sequence $i-1$
+	\end{itemize}
+\end{frame}
+\begin{frame}{\expii}
+	\textbf{results:}
+	\begin{itemize}
+		\item activations of cells in 3rd layer showed reactions on indentation of C-code / spacial characters vs. ńon-white-space characters
+		\item in addition the hinton diagrams suggest cells reacting on capital letters
+		\item “parantheses-effect“ could not be reproduced
+		\item generated C-code never showed perfect syntax, but was sometimes close
+		\item perfect comment-syntax (but words were random letter combinations)
+	\end{itemize}
+\end{frame}
+\begin{frame}{\expii}
+	\textbf{conclusion:}
+	\begin{itemize}
+		\item method too complicated, in addition too long training times because batch-size was tight to 1		
+		\item overgeneration of comments, natural language like variable names: comments in training data should have been removed, model had to learn two languages
+		\item plots indicate correlations, but computation for single but consistently reoccuring events is difficult / impossible (to be shown later)
+		\item correlation with indentation / spaces is basically an effect of character repitition
+	\end{itemize}
+\end{frame}

@@ -1,0 +1,20 @@
+\begin{frame}{\expx}
+	\textbf{motivation:}
+	\begin{itemize}
+		\item for non-linear data like ours (activations) with respect to our research questions, we need a non-linear method of analysis
+		\item autoencoders seemded to be worth a try
+		\item unfortunately this is work in progress without any results so far
+	\end{itemize}
+	\textbf{procedure:}
+	\begin{itemize}
+		\item training an autoencoder on our activation data of the \hdt~word model
+		\item reduce dimensions of input down to 300 and back up again
+		\item look at the inner representation of the input vectors and see what we can do with it
+	\end{itemize}
+	\textbf{results:}
+	\begin{itemize}
+		\item right now only a model for the cell outputs of a 2-layered (512, 512) LSTM exists (last layer)
+		\item training parameters: input dim $512$, 1 hidden layer, $H=300$, batch-size $1000$, trained with batch normalization
+		\item model performance: squared error of $\approx 26$
+	\end{itemize}
+\end{frame}

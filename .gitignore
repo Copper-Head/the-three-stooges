@@ -63,3 +63,12 @@ target/
 
 # Stooge-specific: don't check in data by mistake!
 data/
+
+# latex-stuff
+*.aux
+*.bbl
+*.blg
+*.nav
+*.snm
+*.synctex.gz
+*.toc

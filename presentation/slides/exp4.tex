@@ -1,0 +1,24 @@
+\begin{frame}{\expiv}
+	\textbf{motivation:}
+	\begin{itemize}
+		\item this experiment was a first computational approach to the ideas of E1 and E2 (exploring the network)
+		\item we aimed at generalizing sequence-specific findings generated with visual techniques (exploring a method) by using a computational approach
+	\end{itemize}
+	\textbf{procedure:}
+	\begin{itemize}
+		\item to achieve this, we marked particular properties of \kj~character sequences and computed their activations
+		\item then we computed correlations of the marking vector and the activations of a 3-layered LSTM for each sequence and average over all sequences
+	\end{itemize}
+\end{frame}
+\begin{frame}{\expiv}
+	\textbf{results:}
+	\begin{itemize}
+		\item correlations of almost \texttt{1.0} for sequence-length marking (cf. E5, E6) for higher layers
+		\item higher correlations of around \texttt{0.6} for word bounderies (also higher layers)
+	\end{itemize}
+	\textbf{conclusion:}
+	\begin{itemize}
+		\item we could confirm \citeauthor{karpathy2015visualizing}'s findings on sequence length
+		\item maybe the assumption of \textit{consistent} behaviour of \textit{single} neurons over all sequences does not hold, this would explain low averages (cf. E5, E6)
+	\end{itemize}
+\end{frame}

@@ -1,0 +1,20 @@
+\begin{frame}{Data, Tasks and Architectures}
+	\citet{karpathy2015visualizing} ran an analysis on several recurrent neural network architectures learning character sequences of the linux kernel. Observation:
+	
+	Neurons \textit{kept track} of properties like \textcolor{orange}{sentence length}, \textcolor{orange}{line breaks} or text \textcolor{orange}{within} vs. \textcolor{orange}{not within} quotes.
+	
+	\begin{block}{}
+		\begin{itemize}
+			\item train sequence generators with different underlying architectures (simple recurrent, GRU and LSTM)
+			\item train character-level and word-level models
+			\item use the following three datasets:			
+
+			\vspace{1em}
+			\begin{tabular}{lll}
+				\kj & King James Bible\footnote{ http://www.gutenberg.org/cache/epub/10/pg10.txt} &\\
+				\lk & Linux-Kernel\footnote{https://github.com/torvalds/linux} & \\
+				\hdt & Hamburg Dependency Treebank & \citet{foth2014because}
+			\end{tabular}
+		\end{itemize}
+	\end{block}
+\end{frame}
