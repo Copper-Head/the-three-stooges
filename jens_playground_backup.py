@@ -51,7 +51,7 @@ for param in params:
 
 
 # this section deals with prediction probabilities
-"""
+
 readouts = VariableFilter(theano_name="readout_readout_output_0")(lstm_net.cost_model.variables)[0]
 char_probs = lstm_net.generator.readout.emitter.probs(readouts)
 
@@ -63,13 +63,14 @@ print lord
 zaza = prob_function([lord], numpy.ones((1, len(lord)), dtype="int8"))[:, 0, :]
 print zaza
 print zaza.shape
-raw_input()
 for (ey, row) in enumerate(zaza):
-    print "PREDICTION PROBABILITIES FOR POSITION", ey, "LETTER", lord_original[ey]
-    for (ind, prob) in enumerate(row):
+    print "PREDICTION PROBABILITIES FOR POSITION", ey, "LETTER", repr(lord_original[ey])
+    sorted_thing = [(prob, ind) for (ind, prob) in enumerate(row)]
+    sorted_thing.sort(reverse=True)
+    for (prob, ind) in sorted_thing:
         print repr(map_ind_2_chr[ind]), ":", prob
     print "\n"
-"""
+raw_input("DONE")
 
 # define a function that gets the overall "sum of scores" at a given time step
 readouts = VariableFilter(theano_name="readout_readout_output_0")(lstm_net.cost_model.variables)[0]
