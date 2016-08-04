@@ -40,8 +40,8 @@ def mark_letter(seq_batch, mask_batch, letter):
 map_chr_2_ind = cPickle.load(open("char_to_ind.pkl"))
 map_ind_2_chr = cPickle.load(open("ind_to_char.pkl"))
 
-lstm_net = Network(NetworkType.SIMPLE_RNN, input_dim=len(map_ind_2_chr), hidden_dims=[1024])
-lstm_net.set_parameters('seqgen_simple_1024.pkl')
+lstm_net = Network(NetworkType.LSTM, input_dim=len(map_ind_2_chr), hidden_dims=[512, 512, 512])
+lstm_net.set_parameters('seqgen_lstm_512_512_512.pkl')
 
 
 # having a look at connectioneros from the cellsinas to the outputsos
@@ -51,7 +51,7 @@ for param in params:
 
 
 # this section deals with prediction probabilities
-
+"""
 readouts = VariableFilter(theano_name="readout_readout_output_0")(lstm_net.cost_model.variables)[0]
 char_probs = lstm_net.generator.readout.emitter.probs(readouts)
 
@@ -70,7 +70,7 @@ for (ey, row) in enumerate(zaza):
     for (prob, ind) in sorted_thing:
         print repr(map_ind_2_chr[ind]), ":", prob
     print "\n"
-raw_input("DONE")
+"""
 
 # define a function that gets the overall "sum of scores" at a given time step
 readouts = VariableFilter(theano_name="readout_readout_output_0")(lstm_net.cost_model.variables)[0]
@@ -100,16 +100,16 @@ super_marker = numpy.empty(shape=(0,))
 
 # storage for the connections from states to output (softmax)
 # this later allows easier connection between each layer's states and the corresponding output connection
-#connection_dict = dict()
-#standard_name = "/sequencegenerator/readout/merge/transform_states"
-#for name in sc.state_var_names:
-#    if name[-1] == "2":
-#        name_here = standard_name + "#2.W"
-#    elif name[-1] == "1":
-#        name_here = standard_name + "#1.W"
-#    else:
-#        name_here = standard_name + ".W"
-#    connection_dict[name] = params[name_here][:, map_chr_2_ind["O"]]
+connection_dict = dict()
+standard_name = "/sequencegenerator/readout/merge/transform_states"
+for name in sc.state_var_names:
+    if name[-1] == "2":
+        name_here = standard_name + "#2.W"
+    elif name[-1] == "1":
+        name_here = standard_name + "#1.W"
+    else:
+        name_here = standard_name + ".W"
+    connection_dict[name] = params[name_here][:, map_chr_2_ind["O"]]
 
 # if this is true, each state will be aligned with the character (or event derived from it) that it is used to *predict*
 # if false, each state will be aligned with the character that was most recently read
@@ -125,7 +125,7 @@ try:
         # mask is in shape batch_size x seq_len, so NOT transposed, so it is flattened in C order
         mask_reshaped = mask_batch.flatten(order="C")
         # get marker (very preliminary...)
-        seq_len_correlator = mark_word_boundaries_batch(seq_batch, mask_batch)
+        seq_len_correlator = mark_letter(seq_batch, mask_batch, letter="L")
         super_marker = numpy.append(super_marker, seq_len_correlator)
         # TESTING total score thingy -- should be 2D, seq_len x batch_size
         #overall_scores = score_function(seq_batch, mask_batch)
