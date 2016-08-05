@@ -6,7 +6,7 @@ from blocks.filter import VariableFilter
 from fuel.datasets.hdf5 import H5PYDataset
 from fuel.streams import DataStream
 from fuel.schemes import SequentialScheme
-from scipy.stats import pearsonr
+from scipy.stats import pearsonr, spearmanr
 from sklearn.decomposition import PCA
 from theano import function
 
@@ -85,6 +85,19 @@ for name in sc.state_var_names:
     state_super_dict[name] = numpy.empty(shape=(0, lstm_net.hidden_dims[0]), dtype="float32")
 super_marker = numpy.empty(shape=(0,))
 
+# storage for the connections from states to output (softmax)
+# this later allows easier connection between each layer's states and the corresponding output connection
+connection_dict = dict()
+standard_name = "/sequencegenerator/readout/merge/transform_states"
+for name in sc.state_var_names:
+    if name[-1] == "2":
+        name_here = standard_name + "#2.W"
+    elif name[-1] == "1":
+        name_here = standard_name + "#1.W"
+    else:
+        name_here = standard_name + ".W"
+    connection_dict[name] = params[name_here][:, map_chr_2_ind["O"]]
+
 # if this is true, each state will be aligned with the character (or event derived from it) that it is used to *predict*
 # if false, each state will be aligned with the character that was most recently read
 prediction_alignment = False
@@ -99,7 +112,8 @@ try:
         # mask is in shape batch_size x seq_len, so NOT transposed, so it is flattened in C order
         mask_reshaped = mask_batch.flatten(order="C")
         # get marker (very preliminary...)
-        seq_len_correlator = corr_function(seq_batch, mask_batch)
+        #seq_len_correlator = corr_function(seq_batch, mask_batch)
+        seq_len_correlator = mark_letter(seq_batch, mask_batch, letter="L")
         super_marker = numpy.append(super_marker, seq_len_correlator)
         for state_type in state_batch_dict:
             state_batch = state_batch_dict[state_type]
