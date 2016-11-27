@@ -22,7 +22,7 @@ args = parser.parse_args()
 
 numpy.set_printoptions(precision=8, suppress=True)
 
-
+# random change
 # TODO get these into util.py, maybe in a prettier form
 def mark_seq_len_batch(seq_batch, mask_batch):
     # get markers separately, then reshape
